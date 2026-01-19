@@ -1,0 +1,8 @@
+.logo {
+  width: 80px;          /* tamaño del logo */
+  height: auto;         /* mantiene proporción */
+  margin-bottom: 20px;  /* espacio debajo */
+  border-radius: 50%;   /* lo hace circular */
+  border: 3px solid #000; /* borde negro */
+  box-shadow: 0 0 10px rgba(0,0,0,0.3); /* sombra */
+}

@@ -1,0 +1,55 @@
+.logo {
+  width: 120px;
+  margin-bottom: 30px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 300px;
+}
+
+.login-form input {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+}
+
+.login-form button {
+  padding: 10px;
+  background-color: #1a1a1a;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 👇 Fondo aplicado a toda la pantalla */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.login-container {
+  background-image: url("../assets/fondo.png"); /* tu imagen */
+  background-size: cover;       /* que cubra toda la pantalla */
+  background-position: center;  /* centrado */
+  background-repeat: no-repeat; /* evita que se repita */
+  height: 100vh;                /* ocupa toda la altura */
+  width: 100vw;                 /* ocupa todo el ancho */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+/* 👇 Caja del login encima del fondo */
+.login-box {
+  background-color: rgba(255, 255, 255, 0.0); /* caja semitransparente */
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
