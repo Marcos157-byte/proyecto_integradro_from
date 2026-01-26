@@ -7,17 +7,16 @@ import DashboardBodega from "./pages/DashboardBodega";
 import PrivateRoute from "./routes/PrivateRoute";
 
 // Importa tus componentes
-import ProveedorForm from "./components/ProveedorForm";
-import ProveedorList from "./components/ProveedorList";
-import ColorForm from "./components/ColorForm";
-import ColorList from "./components/ColorList";
-import TallaForm from "./components/TallaForm";
-import TallaList from "./components/TallaList";
-import CategoriaForm from "./components/CategoriaForm";
-import CategoriaList from "./components/CategoriaList";
-import ProductoForm from "./components/ProductoForm";
-import ProductoList from "./components/ProductoList";
-
+import ProveedorList from "./components/Proveedor/ProveedorList";
+import ColorList from "./components/Color/ColorList";
+import TallaList from "./components/Talla/TallaList";
+import ProductoList from "./components/Producto/ProductoList";
+import RegistroUsuario from "./components/Usuario/UsuarioForm";
+import VentaList from "./components/Venta/VentaList";
+import ClienteForm from "./components/Cliente/ClienteForm";
+import VentaReportes from "./components/Venta/VentaReposte";
+import HomeAdmin from "./components/layout/HomeAdmin";
+import HomeBodega from "./components/layout/HomeBodega";
 function App() {
   return (
     <AuthProvider>
@@ -34,7 +33,10 @@ function App() {
                 <DashboardVentas />
               </PrivateRoute>
             }
-          />
+          >
+            <Route path="clientes" element={<ClienteForm />} />
+
+          </Route>
 
           {/* Administrador */}
           <Route
@@ -44,7 +46,15 @@ function App() {
                 <DashboardAdmin />
               </PrivateRoute>
             }
-          />
+          >
+            {/* Ruta por defecto: cuando entras a /admin te manda a /admin/dashboard */}
+            <Route index element={<HomeAdmin />} />
+
+            <Route path="usuarios" element={<RegistroUsuario />} />
+            <Route path="ventas" element={<VentaList />} />
+            <Route path="reportes" element={<VentaReportes />} />
+
+          </Route>
 
           {/* Bodega */}
           <Route
@@ -54,105 +64,13 @@ function App() {
                 <DashboardBodega />
               </PrivateRoute>
             }
-          />
-
-          {/* Proveedores */}
-          <Route
-            path="/proveedores/crear"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <ProveedorForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/proveedores/lista"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <ProveedorList />
-              </PrivateRoute>
-            }
-          />
-
-          {/* Colores */}
-          <Route
-            path="/colores/crear"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <ColorForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/colores/lista"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <ColorList />
-              </PrivateRoute>
-            }
-          />
-
-          {/* Tallas */}
-          <Route
-            path="/tallas/crear"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <TallaForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/tallas/lista"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <TallaList />
-              </PrivateRoute>
-            }
-          />
-
-          {/* Categorías */}
-          <Route
-            path="/categorias/crear"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <CategoriaForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/categorias/lista"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <CategoriaList />
-              </PrivateRoute>
-            }
-          />
-
-          {/* Productos */}
-          <Route
-            path="/productos/crear"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <ProductoForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/productos/lista"
-            element={
-              <PrivateRoute allowedRoles={["bodega"]}>
-                <ProductoList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/venta"
-            element={
-              <PrivateRoute allowedRoles={["ventas"]}>
-                <DashboardVentas />
-              </PrivateRoute>
-            }
-          />
+          >
+            <Route path="productos" element={<ProductoList />} />
+            <Route index element={<HomeBodega />} />
+            <Route path="tallas" element={<TallaList />} />
+            <Route path="colores" element={<ColorList />} />
+            <Route path="proveedores" element={<ProveedorList />} />
+          </Route>
 
           {/* Redirección raíz */}
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -166,3 +84,4 @@ function App() {
 }
 
 export default App;
+
