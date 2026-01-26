@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { createCategoria } from "../services/categoriaService";
-import "../styles/CategoriaForm.css";
+import { createCategoria } from "../../services/categoriaService";
+
 
 function CategoriaForm() {
   const [formData, setFormData] = useState({ nombre: "", descripcion: "" });
@@ -38,7 +38,7 @@ function CategoriaForm() {
     }
 
     // Validación local: nombre solo letras y máximo 100 caracteres
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/.test(formData.nombre)) {
+    if (!/^[A-Za-z\s]+$/.test(formData.nombre)) {
       setMessage({ type: "error", text: "⛔ El nombre solo puede contener letras y espacios" });
       return;
     }
@@ -100,19 +100,6 @@ function CategoriaForm() {
     setFormData({ nombre: categoria.nombre, descripcion: categoria.descripcion });
   };
 
-  // Obtener inicial del nombre para el badge
-  const getInitial = (name: string) => {
-    return name.charAt(0).toUpperCase();
-  };
-
-  // Formatear descripción para vista previa
-  const formatDescription = (desc: string) => {
-    if (desc.length > 100) {
-      return desc.substring(0, 100) + "...";
-    }
-    return desc;
-  };
-
   return (
     <div className="categoria-form-container">
       {/* Header */}
@@ -165,7 +152,7 @@ function CategoriaForm() {
             name="descripcion"
             value={formData.descripcion}
             onChange={handleChange}
-            placeholder="Describe la categoría (máximo 255 caracteres)..."
+            placeholder="Describe la categoría..."
             className="form-input"
             disabled={loading}
             required
@@ -174,29 +161,8 @@ function CategoriaForm() {
           />
           <div className="size-indicator">
             <span className="current-size">{formData.descripcion.length}/255 caracteres</span>
-            <span className="size-limit">Descripción clara y concisa</span>
           </div>
         </div>
-
-        {/* Vista previa de la categoría */}
-        {(formData.nombre || formData.descripcion) && (
-          <div className="categoria-preview-container">
-            <div className="preview-label">Vista previa</div>
-            <div className="categoria-display">
-              <div className="categoria-badge">
-                {getInitial(formData.nombre) || "C"}
-              </div>
-              <div className="categoria-info">
-                <div className="categoria-nombre">
-                  {formData.nombre || "Nombre de categoría"}
-                </div>
-                <p className="categoria-descripcion">
-                  {formData.descripcion ? formatDescription(formData.descripcion) : "Descripción de la categoría..."}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Botones */}
         <div className="form-buttons">
@@ -234,10 +200,9 @@ function CategoriaForm() {
                 key={index}
                 className="categoria-chip"
                 onClick={() => handleChipClick(categoria)}
-                title={`Usar categoría: ${categoria.nombre}\n${categoria.descripcion}`}
+                title={`Usar categoría: ${categoria.nombre}`}
               >
-                <div className="chip-nombre">{categoria.nombre}</div>
-                <div className="chip-descripcion">{formatDescription(categoria.descripcion)}</div>
+                {categoria.nombre}
               </div>
             ))}
           </div>
