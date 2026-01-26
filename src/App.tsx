@@ -17,6 +17,7 @@ import ClienteForm from "./components/Cliente/ClienteForm";
 import VentaReportes from "./components/Venta/VentaReposte";
 import HomeAdmin from "./components/layout/HomeAdmin";
 import HomeBodega from "./components/layout/HomeBodega";
+import CategoriaList from "./components/Categoria/CategoriaList";
 function App() {
   return (
     <AuthProvider>
@@ -70,6 +71,7 @@ function App() {
             <Route path="tallas" element={<TallaList />} />
             <Route path="colores" element={<ColorList />} />
             <Route path="proveedores" element={<ProveedorList />} />
+            <Route path="categorias" element={<CategoriaList />} /> {/* <-- VINCULACIÓN AQUÍ */}
           </Route>
 
           {/* Redirección raíz */}

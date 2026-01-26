@@ -3,13 +3,12 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, 
   Button, Grid, TextField, MenuItem, CircularProgress, Box 
 } from "@mui/material";
-import { listCategorias } from "../../services/categoriaService";
+
+// 1. Importaciones de servicios (Asegúrate de que getCategorias esté exportada en su service)
+import { getCategorias } from "../../services/categoriaService";
 import { getTallas } from "../../services/tallaService";
 import { listColores } from "../../services/colorService";
 import { getProveedores } from "../../services/proveedorService";
-
-// Importaciones corregidas con rutas relativas a src/services
-
 
 export default function ModalCrearProducto({ open, onClose, onSave }: any) {
   const [loading, setLoading] = useState(false);
@@ -35,19 +34,22 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
       const cargarOpciones = async () => {
         setLoading(true);
         try {
-          // 1. Ejecutamos todas las funciones (Nota los paréntesis en todas)
+          // LLAMADAS EN PARALELO
           const [catRes, talRes, colRes, provRes] = await Promise.all([
-            listCategorias({ limit: 100 }), // Mongo
+            getCategorias(1, 100),         // Mongo (Cambiado CategoriaList por getCategorias)
             getTallas(1, 100),             // Mongo
             listColores(),                 // Postgres
             getProveedores({ limit: 100 })  // Postgres
           ]);
 
-          // 2. Extracción segura de datos según el origen (Mongo usa .docs, Postgres usa .data)
+          // EXTRACCIÓN SEGÚN ESTRUCTURA DE RESPUESTA
+          // Mongo (PaginatedResponseMongo): la data real está en .data.docs
           setCategorias(catRes.data?.docs || []);
           setTallas(talRes.data?.docs || []);
-          setColores(colRes || []); // listColores ya devuelve el array limpio
-          setProveedores(provRes.data?.data || []);
+          
+          // Postgres: Depende de cómo devuelvas la data en tus otros services
+          setColores(colRes || []); 
+          setProveedores(provRes.data?.data || provRes.data || []);
           
         } catch (error) {
           console.error("Error cargando opciones:", error);
@@ -65,33 +67,37 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>
+      <DialogTitle sx={{ fontWeight: 800, bgcolor: '#f8fafc', display: 'flex', alignItems: 'center', gap: 1 }}>
         📦 Registrar Nuevo Producto
       </DialogTitle>
       
       <DialogContent dividers>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 5, gap: 2 }}>
             <CircularProgress />
+            <Box sx={{ color: 'text.secondary', variant: 'body2' }}>Sincronizando bases de datos...</Box>
           </Box>
         ) : (
           <Grid container spacing={2} sx={{ mt: 1 }}>
+            {/* Nombre */}
             <Grid item xs={12}>
               <TextField label="Nombre del Producto" fullWidth value={form.nombre} 
                 onChange={(e) => setForm({...form, nombre: e.target.value})} />
             </Grid>
 
+            {/* Precio */}
             <Grid item xs={6}>
               <TextField label="Precio ($)" type="number" fullWidth value={form.precio}
                 onChange={(e) => setForm({...form, precio: Number(e.target.value)})} />
             </Grid>
 
+            {/* Stock */}
             <Grid item xs={6}>
               <TextField label="Stock Inicial" type="number" fullWidth value={form.stock_total}
                 onChange={(e) => setForm({...form, stock_total: Number(e.target.value)})} />
             </Grid>
 
-            {/* Select Categoría */}
+            {/* Categoría (Mongo) */}
             <Grid item xs={6}>
               <TextField select label="Categoría" fullWidth value={form.id_categoria}
                 onChange={(e) => setForm({...form, id_categoria: e.target.value})}>
@@ -101,7 +107,7 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
               </TextField>
             </Grid>
 
-            {/* Select Talla */}
+            {/* Talla (Mongo) */}
             <Grid item xs={6}>
               <TextField select label="Talla" fullWidth value={form.id_talla}
                 onChange={(e) => setForm({...form, id_talla: e.target.value})}>
@@ -111,7 +117,7 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
               </TextField>
             </Grid>
 
-            {/* Select Color */}
+            {/* Color (Postgres) */}
             <Grid item xs={6}>
               <TextField select label="Color" fullWidth value={form.id_color}
                 onChange={(e) => setForm({...form, id_color: e.target.value})}>
@@ -121,7 +127,7 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
               </TextField>
             </Grid>
 
-            {/* Select Proveedor */}
+            {/* Proveedor (Postgres) */}
             <Grid item xs={6}>
               <TextField select label="Proveedor" fullWidth value={form.id_proveedor}
                 onChange={(e) => setForm({...form, id_proveedor: e.target.value})}>
@@ -134,14 +140,15 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
         )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
-        <Button onClick={onClose} color="inherit">Cancelar</Button>
+      <DialogActions sx={{ p: 3, bgcolor: '#f8fafc' }}>
+        <Button onClick={onClose} color="inherit" variant="outlined">Cancelar</Button>
         <Button 
           variant="contained" 
           onClick={handleSave} 
-          disabled={loading || !form.nombre || !form.id_categoria || !form.id_talla}
+          disabled={loading || !form.nombre || !form.id_categoria || !form.id_talla || !form.id_color}
+          sx={{ fontWeight: 700, px: 4 }}
         >
-          Guardar Producto
+          {loading ? "Cargando..." : "Guardar Producto"}
         </Button>
       </DialogActions>
     </Dialog>
