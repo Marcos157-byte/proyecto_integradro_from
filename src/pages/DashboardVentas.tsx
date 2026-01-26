@@ -1,24 +1,20 @@
+import { Box, Toolbar } from "@mui/material";
+import SidebarVentas from "../components/layout/SidebarVenta";
+import TopBar from "../components/layout/TopBar";
+import { Outlet } from "react-router-dom";
+import { useState } from "react";
 
-import VentaForm from "../components/VentaForm";
-import { useAuth } from "../context/AuthContext";
-import VentaList from "../components/VentaList";
-function DashboardVentas() {
-  const { user } = useAuth(); // 👈 más limpio
+export default function DashboardVentas() {
+  const [openSidebar, setOpenSidebar] = useState(false);
 
   return (
-    <div className="dashboard-ventas">
-      <h1>Panel de Ventas</h1>
-
-      <section>
-        <h2>Registrar nueva venta</h2>
-        {user && <VentaForm id_usuario={user.id} />}
-      </section>
-       <section>
-        <h2>Listado de ventas</h2>
-        <VentaList /> {/* 👈 aquí se muestra el listado */}
-      </section>
-    </div>
+    <Box sx={{ display: "flex" }}>
+      <TopBar onMenuClick={() => setOpenSidebar(true)} />
+      <SidebarVentas open={openSidebar} onClose={() => setOpenSidebar(false)} />
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar />
+        <Outlet />
+      </Box>
+    </Box>
   );
 }
-
-export default DashboardVentas;

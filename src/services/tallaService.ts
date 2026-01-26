@@ -1,18 +1,58 @@
-// services/tallaService.ts (Mongo)
 import client from "../api/client";
+import type { SuccessResponse } from "../types/api.types";
+import type { 
+  Talla, 
+  TallaResponse, 
+  TallasPaginadasResponse 
+} from "../types/talla.types";
 
-export async function createTalla(talla: any) {
-  const { data } = await client.post("/tallas", talla);
-  return data; // 👈 devuelve el objeto creado
+const PATH = "/tallas";
+
+/**
+ * Obtiene la lista de tallas paginada desde MongoDB
+ * Usa PaginatedResponseMongo para manejar docs, totalDocs, etc.
+ */
+export async function getTallas(page: number = 1, limit: number = 10, search?: string): Promise<TallasPaginadasResponse> {
+  const { data } = await client.get<TallasPaginadasResponse>(PATH, {
+    params: { 
+      page, 
+      limit, 
+      search,
+      searchField: 'nombre' // Según la validación de tu Schema (solo letras)
+    }
+  });
+  return data;
 }
 
-export async function listTalla(page: number = 1, limit: number = 10) {
-  const { data } = await client.get(`/tallas?page=${page}&limit=${limit}`);
-  return {
-    docs: data.data.docs,
-    totalPages: data.data.totalPages,
-    totalDocs: data.data.totalDocs,
-    page: data.data.page,
-    limit: data.data.limit
-  };
+/**
+ * Obtiene una sola talla por su ID único (UUID)
+ */
+export async function getTallaById(id: string): Promise<TallaResponse> {
+  const { data } = await client.get<TallaResponse>(`${PATH}/${id}`);
+  return data;
+}
+
+/**
+ * Registra una nueva talla en MongoDB
+ * @param payload Objeto con el nombre de la talla (ej: { nombre: "XL" })
+ */
+export async function createTalla(payload: Partial<Talla>): Promise<TallaResponse> {
+  const { data } = await client.post<TallaResponse>(PATH, payload);
+  return data;
+}
+
+/**
+ * Actualiza el nombre de una talla existente
+ */
+export async function updateTalla(id: string, payload: Partial<Talla>): Promise<TallaResponse> {
+  const { data } = await client.put<TallaResponse>(`${PATH}/${id}`, payload);
+  return data;
+}
+
+/**
+ * Elimina una talla de la base de datos
+ */
+export async function deleteTalla(id: string): Promise<SuccessResponse<null>> {
+  const { data } = await client.delete<SuccessResponse<null>>(`${PATH}/${id}`);
+  return data;
 }
