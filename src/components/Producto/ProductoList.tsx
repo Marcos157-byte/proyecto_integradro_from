@@ -7,7 +7,6 @@ import {
 } from "@mui/material";
 import { 
   SearchRounded as SearchIcon, 
-  Inventory2Rounded as StockIcon,
   AddRounded as AddIcon,
   EditRounded as EditIcon
 } from "@mui/icons-material";

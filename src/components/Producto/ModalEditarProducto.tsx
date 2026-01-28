@@ -96,7 +96,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>
         ) : (
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField 
                 label="Nombre del Producto" 
                 fullWidth 
@@ -105,7 +105,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField 
                 label="Precio ($)" 
                 fullWidth 
@@ -115,7 +115,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField 
                 label="Stock Actual" 
                 fullWidth 
@@ -127,7 +127,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
             </Grid>
 
             {/* Select Categoría (Mongo) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField select label="Categoría" fullWidth value={form.id_categoria}
                 onChange={(e) => setForm({...form, id_categoria: e.target.value})}>
                 {categorias.map((c) => (
@@ -137,7 +137,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
             </Grid>
 
             {/* Select Talla (Mongo) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField select label="Talla" fullWidth value={form.id_talla}
                 onChange={(e) => setForm({...form, id_talla: e.target.value})}>
                 {tallas.map((t) => (
@@ -147,7 +147,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
             </Grid>
 
             {/* Select Color (Postgres) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField select label="Color" fullWidth value={form.id_color}
                 onChange={(e) => setForm({...form, id_color: e.target.value})}>
                 {colores.map((col) => (
@@ -157,7 +157,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
             </Grid>
 
             {/* Select Proveedor (Postgres) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6}}>
               <TextField select label="Proveedor" fullWidth value={form.id_proveedor}
                 onChange={(e) => setForm({...form, id_proveedor: e.target.value})}>
                 {proveedores.map((p) => (
