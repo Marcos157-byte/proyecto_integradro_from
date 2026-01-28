@@ -219,35 +219,35 @@ export default function ProveedorList() {
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField 
                 fullWidth label="Nombre de la Empresa" 
                 value={form.nombre} 
                 onChange={(e) => setForm({...form, nombre: e.target.value})} 
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12}}>
               <TextField 
                 fullWidth label="Nombre del Contacto" 
                 value={form.contacto} 
                 onChange={(e) => setForm({...form, contacto: e.target.value})} 
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 12 }}>
               <TextField 
                 fullWidth label="Teléfono" 
                 value={form.telefono} 
                 onChange={(e) => setForm({...form, telefono: e.target.value})} 
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6}}>
               <TextField 
                 fullWidth label="Email" 
                 value={form.email} 
                 onChange={(e) => setForm({...form, email: e.target.value})} 
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField 
                 fullWidth label="Dirección Física" 
                 multiline rows={2} 

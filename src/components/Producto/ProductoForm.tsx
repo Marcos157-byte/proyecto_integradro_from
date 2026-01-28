@@ -35,14 +35,14 @@ export default function ProductoCreateModal({ open, onClose, onSave }: any) {
       <DialogTitle sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>📦 Registrar Nuevo Producto</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} sm={8}>
+          <Grid size={{ xs: 12, sm: 8 }}>
             <TextField label="Nombre del Producto" name="nombre" fullWidth onChange={handleChange} />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField label="SKU / Código" name="codigo_sku" fullWidth onChange={handleChange} />
           </Grid>
           
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField select label="Categoría" name="categoria" fullWidth value={nuevoProd.categoria} onChange={handleChange}>
               <MenuItem value="Caballero">Caballero</MenuItem>
               <MenuItem value="Dama">Dama</MenuItem>
@@ -50,7 +50,7 @@ export default function ProductoCreateModal({ open, onClose, onSave }: any) {
             </TextField>
           </Grid>
           
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField select label="Talla" name="talla" fullWidth value={nuevoProd.talla} onChange={handleChange}>
               <MenuItem value="28">28</MenuItem>
               <MenuItem value="30">30</MenuItem>
@@ -59,10 +59,10 @@ export default function ProductoCreateModal({ open, onClose, onSave }: any) {
             </TextField>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label="Stock Inicial" name="stock_actual" type="number" fullWidth onChange={handleChange} />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label="Alerta Stock Mínimo" name="stock_minimo" type="number" fullWidth defaultValue={5} onChange={handleChange} />
           </Grid>
         </Grid>

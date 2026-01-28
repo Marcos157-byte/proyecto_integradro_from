@@ -19,7 +19,7 @@ export default function StatsCards({ stats }: Props) {
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
       {cards.map((card, index) => (
-        <Grid item xs={12} sm={4} key={index}>
+        <Grid size={{ xs: 12, sm: 4 }}  key={index}>
           <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center' }}>
             <Box sx={{ bgcolor: alpha(card.color, 0.1), color: card.color, p: 2, borderRadius: 3, mr: 2 }}>
               {card.icon}
