@@ -1,48 +1,49 @@
 import client from "../api/client";
-import type { VentaDto, SuccessResponseDto, PaginatedResponse } from "../types/venta.dto";
+import type { SuccessResponse, PaginatedResponse } from "../types/api.types";
+import type { 
+  CreateVentaDto, 
+  VentaResponse, 
+  ResumenDashboardResponse 
+} from "../types/venta.types";
 
-// Crear venta
-export async function createVenta(payload: Omit<VentaDto, "id_venta" | "fechaVenta" | "subtotal" | "iva" | "total">): Promise<VentaDto> {
-  const { data } = await client.post<SuccessResponseDto<VentaDto>>("/ventas", payload);
+const PATH = "/venta";
+
+/**
+ * 1. Obtiene el resumen del turno (Total Caja y Conteo)
+ */
+export async function getResumenDashboard(id_usuario: string): Promise<ResumenDashboardResponse> {
+  const { data } = await client.get<SuccessResponse<ResumenDashboardResponse>>(`${PATH}/dashboard/resumen`, {
+    params: { id_usuario }
+  });
+  return data.data; 
+}
+
+/**
+ * 2. Obtiene el Top de Productos vendidos
+ */
+export async function getTopProductosVendedor(id_usuario: string, periodo: string = 'dia') {
+  // Aquí usamos 'any' o un tipo específico si lo creas para el top
+  const { data } = await client.get<SuccessResponse<any[]>>(`${PATH}/stats/top-productos`, {
+    params: { id_usuario, periodo }
+  });
   return data.data;
 }
 
-// Listar ventas con paginación
-export async function listVentas(page: number = 1, limit: number = 10): Promise<PaginatedResponse<VentaDto>> {
-  const { data } = await client.get<SuccessResponseDto<PaginatedResponse<VentaDto>>>(`/ventas?page=${page}&limit=${limit}`);
+/**
+ * 3. Registrar una nueva venta
+ */
+export async function registrarVenta(ventaData: CreateVentaDto): Promise<VentaResponse> {
+  const { data } = await client.post<SuccessResponse<VentaResponse>>(PATH, ventaData);
   return data.data;
 }
 
-// Obtener una venta por ID
-export async function getVenta(id: string): Promise<VentaDto> {
-  const { data } = await client.get<SuccessResponseDto<VentaDto>>(`/ventas/${id}`);
+/**
+ * 4. Listar historial de ventas (Paginado)
+ */
+export async function listarVentas(page = 1, limit = 10, search?: string) {
+  // Usamos PaginatedResponse para que sepa que viene 'total', 'page', 'limit' y 'data'
+  const { data } = await client.get<SuccessResponse<PaginatedResponse<VentaResponse>>>(PATH, {
+    params: { page, limit, search }
+  });
   return data.data;
-}
-
-// Actualizar venta
-export async function updateVenta(id: string, payload: Partial<VentaDto>): Promise<VentaDto> {
-  const { data } = await client.put<SuccessResponseDto<VentaDto>>(`/ventas/${id}`, payload);
-  return data.data;
-}
-
-// Eliminar venta
-export async function deleteVenta(id: string): Promise<null> {
-  const { data } = await client.delete<SuccessResponseDto<null>>(`/ventas/${id}`);
-  return data.data;
-}
-
-// Reporte: productos más vendidos
-export async function getProductosMasVendidos(periodo: "dia" | "semana" | "mes") {
-  const { data } = await client.get<SuccessResponseDto<any>>(`/venta/reportes/productos?periodo=${periodo}`);
-  return data.data;
-}
-export async function getVentasPorPeriodo(periodo: "dia" | "semana" | "mes") {
-  const { data } = await client.get(`/venta/ventas?periodo=${periodo}`);
-  return data.data; // devuelve el array con periodo y totalVentas
-}
-
-// Ventas agrupadas por todos los periodos
-export async function getVentasTodosPeriodos() {
-  const { data } = await client.get(`/venta/ventas-todos`);
-  return data.data; // devuelve { dia, semana, mes }
 }

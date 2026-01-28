@@ -59,12 +59,15 @@ export async function deleteProducto(id: string): Promise<void> {
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {
     const { data } = await client.get<SuccessResponse<DashboardStats>>(`${PATH}/dashboard/stats`);
-    // Retornamos data.data o un objeto por defecto si viene vacío
+    // Retornamos data.data o un objeto por defecto
     return data.data || { totalProductos: 0, valorInventario: 0 };
   } catch (error) {
     console.error("Error obteniendo stats:", error);
-    // Devolvemos valores seguros para que el componente no se rompa
-    return { totalProductos: 0, valorInventario: 0 };
+    // IMPORTANTE: Este objeto debe cumplir estrictamente con la interfaz DashboardStats
+    return { 
+      totalProductos: 0, 
+      valorInventario: 0 
+    } as DashboardStats; // Puedes usar 'as DashboardStats' para forzar la compatibilidad si estás seguro
   }
 }
 

@@ -5,7 +5,7 @@ import DashboardVentas from "./pages/DashboardVentas";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import DashboardBodega from "./pages/DashboardBodega";
 import PrivateRoute from "./routes/PrivateRoute";
-
+import HomeVentas from "./components/layout/HomeVenta";
 // Importa tus componentes
 import ProveedorList from "./components/Proveedor/ProveedorList";
 import ColorList from "./components/Color/ColorList";
@@ -18,6 +18,7 @@ import VentaReportes from "./components/Venta/VentaReposte";
 import HomeAdmin from "./components/layout/HomeAdmin";
 import HomeBodega from "./components/layout/HomeBodega";
 import CategoriaList from "./components/Categoria/CategoriaList";
+import NuevaVenta from "./components/Venta/VentaForm";
 function App() {
   return (
     <AuthProvider>
@@ -36,7 +37,8 @@ function App() {
             }
           >
             <Route path="clientes" element={<ClienteForm />} />
-
+            <Route index element={<HomeVentas/>} />
+            <Route path="/ventas/nueva" element={<NuevaVenta/>} />
           </Route>
 
           {/* Administrador */}
