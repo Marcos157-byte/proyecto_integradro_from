@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -55,7 +55,7 @@ const SearchContainer = styled("div")(({ theme }) => ({
 const ProfilePill = styled(ButtonBase)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  padding: '4px 12px 4px 6px', // Un poco más de aire
+  padding: '4px 12px 4px 6px',
   borderRadius: 40,
   gap: theme.spacing(1),
   transition: "all 0.2s ease-in-out",
@@ -68,7 +68,7 @@ const ProfilePill = styled(ButtonBase)(({ theme }) => ({
 
 interface TopBarProps {
   onMenuClick: () => void;
-  isSidebarOpen?: boolean; // Nueva prop opcional por si quieres ajustar el margen
+  isSidebarOpen?: boolean;
 }
 
 export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
@@ -92,9 +92,9 @@ export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
       position="fixed"
       elevation={trigger ? 4 : 0}
       sx={{
-        backgroundColor: trigger ? "#1e3a8a" : "#3a7afe", // Azul un poco más oscuro al scrollear
+        backgroundColor: trigger ? "#1e3a8a" : "#3a7afe",
         transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        zIndex: theme.zIndex.drawer + 1, // Siempre encima del Sidebar
+        zIndex: theme.zIndex.drawer + 1,
         backdropFilter: trigger ? "blur(12px)" : "none",
         width: "100%",
       }}
@@ -110,18 +110,13 @@ export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
                 color: "white",
                 bgcolor: alpha("#fff", 0.1),
                 borderRadius: "12px",
-                transition: "0.2s",
-                "&:hover": { 
-                    bgcolor: alpha("#fff", 0.2),
-                    transform: "scale(1.05)"
-                }
+                "&:hover": { bgcolor: alpha("#fff", 0.2) }
               }}
             >
               <MenuIcon />
             </IconButton>
           </Tooltip>
           
-          {/* Ocultamos el logo si el sidebar está abierto en pantallas pequeñas */}
           {(!isSmall && !isSidebarOpen) && (
             <Typography variant="h6" fontWeight={900} sx={{ letterSpacing: -0.8, ml: 1, userSelect: 'none' }}>
               PROMAX<span style={{ opacity: 0.7, fontWeight: 400 }}>DASH</span>
@@ -163,20 +158,16 @@ export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
 
           {!isMobile && (
             <Stack direction="row" spacing={1}>
-              <Tooltip title="Mensajes">
-                <IconButton color="inherit" sx={{ bgcolor: alpha("#fff", 0.05) }}>
-                  <Badge badgeContent={4} color="error" sx={{ "& .MuiBadge-badge": { fontWeight: 700 } }}>
-                    <MailIcon fontSize="small" />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Notificaciones">
-                <IconButton color="inherit" sx={{ bgcolor: alpha("#fff", 0.05) }}>
-                  <Badge badgeContent={17} color="error" sx={{ "& .MuiBadge-badge": { fontWeight: 700 } }}>
-                    <NotificationsIcon fontSize="small" />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
+              <IconButton color="inherit" sx={{ bgcolor: alpha("#fff", 0.05) }}>
+                <Badge badgeContent={4} color="error">
+                  <MailIcon fontSize="small" />
+                </Badge>
+              </IconButton>
+              <IconButton color="inherit" sx={{ bgcolor: alpha("#fff", 0.05) }}>
+                <Badge badgeContent={17} color="error">
+                  <NotificationsIcon fontSize="small" />
+                </Badge>
+              </IconButton>
             </Stack>
           )}
 
@@ -186,29 +177,31 @@ export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
             sx={{ mx: 1, my: 2, borderColor: alpha('#fff', 0.15), display: { xs: "none", sm: "block" } }} 
           />
 
-          {/* Perfil */}
-          <ProfilePill onClick={(e) => setAnchorEl(e.currentTarget)}>
+          {/* Perfil Corregido */}
+          <ProfilePill onClick={(e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)}>
             <Avatar 
-              src={user?.avatarUrl} 
               sx={{ 
                 width: 34, height: 34, 
                 boxShadow: `0 0 0 2px ${alpha('#fff', 0.2)}`,
-                bgcolor: theme.palette.primary.dark
+                bgcolor: theme.palette.primary.dark,
+                fontSize: "0.85rem",
+                fontWeight: 700
               }} 
             >
-              {user?.nombre?.charAt(0) || "A"}
+              {/* Fallback de iniciales si no hay foto */}
+              {user?.nombre?.charAt(0).toUpperCase() || "A"}
             </Avatar>
             {!isMobile && (
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "white", letterSpacing: 0.2 }}>
-                  {user?.nombre || "Administrador"}
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "white" }}>
+                  {user?.nombre || "Usuario"}
                 </Typography>
                 <KeyboardArrowDownRounded 
                   sx={{ 
                     fontSize: 18, 
                     color: alpha("#fff", 0.7),
-                    transform: anchorEl ? 'rotate(180deg)' : 'none',
-                    transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    transform: Boolean(anchorEl) ? 'rotate(180deg)' : 'none',
+                    transition: '0.3s ease'
                   }} 
                 />
               </Stack>
@@ -216,7 +209,6 @@ export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
           </ProfilePill>
         </Stack>
 
-        {/* Menú de Usuario (Igual al tuyo, con ajustes de padding) */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -230,7 +222,6 @@ export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
                 borderRadius: "16px", 
                 p: 1,
                 boxShadow: '0px 10px 25px rgba(0,0,0,0.1)',
-                border: `1px solid ${theme.palette.divider}`
             } 
           }}
           transformOrigin={{ horizontal: "right", vertical: "top" }}
@@ -239,25 +230,24 @@ export default function TopBar({ onMenuClick, isSidebarOpen }: TopBarProps) {
           <Box sx={{ px: 2, py: 1.5, mb: 1 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{user?.nombre || "Admin"}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {user?.email || "admin@promax.com"}
+              {user?.rol || "Administrador"}
             </Typography>
           </Box>
           <Divider sx={{ mb: 1 }} />
-          <MenuItem onClick={() => setAnchorEl(null)} sx={{ borderRadius: "10px", py: 1 }}>
+          <MenuItem onClick={() => setAnchorEl(null)} sx={{ borderRadius: "10px" }}>
             <ListItemIcon><PersonOutlineRounded fontSize="small" /></ListItemIcon>
             Mi Perfil
           </MenuItem>
-          <MenuItem onClick={() => setAnchorEl(null)} sx={{ borderRadius: "10px", py: 1 }}>
+          <MenuItem onClick={() => setAnchorEl(null)} sx={{ borderRadius: "10px" }}>
             <ListItemIcon><SettingsOutlined fontSize="small" /></ListItemIcon>
             Configuración
           </MenuItem>
           <Divider sx={{ my: 1 }} />
-          <MenuItem onClick={handleLogout} sx={{ borderRadius: "10px", py: 1, color: 'error.main', fontWeight: 600 }}>
+          <MenuItem onClick={handleLogout} sx={{ borderRadius: "10px", color: 'error.main', fontWeight: 600 }}>
             <ListItemIcon><LogoutRounded fontSize="small" color="error" /></ListItemIcon>
             Cerrar Sesión
           </MenuItem>
         </Menu>
-
       </Toolbar>
     </AppBar>
   );
