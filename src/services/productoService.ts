@@ -53,15 +53,33 @@ export async function deleteProducto(id: string): Promise<void> {
 /**
  * KPIs del Dashboard
  */
+/**
+ * KPIs del Dashboard
+ */
 export async function getDashboardStats(): Promise<DashboardStats> {
-  const { data } = await client.get<SuccessResponse<DashboardStats>>(`${PATH}/dashboard/stats`);
-  return data.data;
+  try {
+    const { data } = await client.get<SuccessResponse<DashboardStats>>(`${PATH}/dashboard/stats`);
+    // Retornamos data.data o un objeto por defecto
+    return data.data || { totalProductos: 0, valorInventario: 0 };
+  } catch (error) {
+    console.error("Error obteniendo stats:", error);
+    // IMPORTANTE: Este objeto debe cumplir estrictamente con la interfaz DashboardStats
+    return { 
+      totalProductos: 0, 
+      valorInventario: 0 
+    } as DashboardStats; // Puedes usar 'as DashboardStats' para forzar la compatibilidad si estás seguro
+  }
 }
 
 /**
  * Alertas de stock
  */
 export async function getStockAlerts(): Promise<StockAlerta[]> {
-  const { data } = await client.get<SuccessResponse<StockAlerta[]>>(`${PATH}/dashboard/stock-alerta`);
-  return data.data;
+  try {
+    const { data } = await client.get<SuccessResponse<StockAlerta[]>>(`${PATH}/dashboard/stock-alerta`);
+    return Array.isArray(data.data) ? data.data : [];
+  } catch (error) {
+    console.error("Error obteniendo alertas:", error);
+    return [];
+  }
 }

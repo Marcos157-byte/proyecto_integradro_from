@@ -3,7 +3,9 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, 
   Button, Grid, TextField, MenuItem, CircularProgress, Box 
 } from "@mui/material";
-import { listCategorias } from "../../services/categoriaService";
+
+// Importaciones alineadas con los servicios que ya funcionan
+import { getCategorias } from "../../services/categoriaService";
 import { getTallas } from "../../services/tallaService";
 import { listColores } from "../../services/colorService";
 import { getProveedores } from "../../services/proveedorService";
@@ -19,20 +21,21 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
   const [form, setForm] = useState<any>({
     nombre: "",
     precio: 0,
-    stock_total: 0, // <-- AGREGADO: Para persistir el valor actual
+    stock_total: 0,
     id_categoria: "",
     id_talla: "",
     id_color: "",
     id_proveedor: ""
   });
 
+  // 1. Cargar catálogos al abrir el modal
   useEffect(() => {
     if (open) {
       const cargarCatalogos = async () => {
         setLoading(true);
         try {
           const [catRes, talRes, colRes, provRes] = await Promise.all([
-            listCategorias({ limit: 100 }),
+            getCategorias(1, 100), // Cambiado a getCategorias para consistencia
             getTallas(1, 100),
             listColores(),
             getProveedores({ limit: 100 })
@@ -41,7 +44,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
           setCategorias(catRes.data?.docs || []);
           setTallas(talRes.data?.docs || []);
           setColores(colRes || []); 
-          setProveedores(provRes.data?.data || []);
+          setProveedores(provRes.data?.data || provRes.data || []);
         } catch (error) {
           console.error("Error cargando catálogos", error);
         } finally {
@@ -52,25 +55,27 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
     }
   }, [open]);
 
+  // 2. Sincronizar el formulario con el producto seleccionado
   useEffect(() => {
     if (producto && open) {
       setForm({
         nombre: producto.nombre || "",
         precio: producto.precio || 0,
-        stock_total: producto.stock_total ?? 0, // <-- IMPORTANTE: Rescatamos el stock actual del producto
+        stock_total: producto.stock_total ?? 0,
+        // Extraemos el ID ya sea del objeto poblado o del campo directo
         id_categoria: producto.categoria?.id_categoria || producto.id_categoria || "", 
         id_talla: producto.talla?.id_talla || producto.id_talla || "",
-        id_color: producto.color?.id_color || "",
-        id_proveedor: producto.proveedor?.id_proveedor || ""
+        id_color: producto.color?.id_color || producto.id_color || "",
+        id_proveedor: producto.proveedor?.id_proveedor || producto.id_proveedor || ""
       });
     }
   }, [producto, open]);
 
   const handleUpdate = () => {
+    // Limpieza de datos antes de enviar
     const dataLimpia = {
       ...form,
       precio: Number(String(form.precio).replace(',', '.')),
-      // Aseguramos que stock_total viaje como número para que el backend no lo ignore
       stock_total: Number(form.stock_total) 
     };
 
@@ -100,27 +105,28 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextField 
                 label="Precio ($)" 
                 fullWidth 
                 value={form.precio}
                 onChange={(e) => setForm({...form, precio: e.target.value})} 
-                helperText="Use punto para decimales (ej: 43.00)"
+                helperText="Use punto para decimales"
               />
             </Grid>
 
-            {/* Campo Informativo de Stock (Opcional - solo lectura) */}
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextField 
-                label="Stock Actual (No editable desde aquí)" 
+                label="Stock Actual" 
                 fullWidth 
                 disabled 
                 value={form.stock_total}
                 variant="filled"
+                helperText="El stock se gestiona vía inventario"
               />
             </Grid>
 
+            {/* Select Categoría (Mongo) */}
             <Grid item xs={6}>
               <TextField select label="Categoría" fullWidth value={form.id_categoria}
                 onChange={(e) => setForm({...form, id_categoria: e.target.value})}>
@@ -130,6 +136,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
               </TextField>
             </Grid>
 
+            {/* Select Talla (Mongo) */}
             <Grid item xs={6}>
               <TextField select label="Talla" fullWidth value={form.id_talla}
                 onChange={(e) => setForm({...form, id_talla: e.target.value})}>
@@ -139,6 +146,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
               </TextField>
             </Grid>
 
+            {/* Select Color (Postgres) */}
             <Grid item xs={6}>
               <TextField select label="Color" fullWidth value={form.id_color}
                 onChange={(e) => setForm({...form, id_color: e.target.value})}>
@@ -148,6 +156,7 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
               </TextField>
             </Grid>
 
+            {/* Select Proveedor (Postgres) */}
             <Grid item xs={6}>
               <TextField select label="Proveedor" fullWidth value={form.id_proveedor}
                 onChange={(e) => setForm({...form, id_proveedor: e.target.value})}>
@@ -160,13 +169,13 @@ export default function ModalEditarProducto({ open, onClose, producto, onUpdate 
         )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
-        <Button onClick={onClose} color="inherit">Cancelar</Button>
+      <DialogActions sx={{ p: 3, bgcolor: '#f8fafc' }}>
+        <Button onClick={onClose} color="inherit" variant="outlined">Cancelar</Button>
         <Button 
           variant="contained" 
           onClick={handleUpdate} 
-          color="primary" 
-          disabled={loading || !form.nombre}
+          disabled={loading || !form.nombre || !form.id_categoria}
+          sx={{ fontWeight: 700, px: 3 }}
         >
           Guardar Cambios
         </Button>

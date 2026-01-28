@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { login as apiLogin, me as apiMe } from "../api/auth";
 
 interface User {
-  id: string;
+  id_usuario: string;
   nombre: string;
   rol: string;
   email: string;
@@ -19,49 +19,65 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  // 👉 Al refrescar la página, recuperamos el usuario con /auth/me
+  // 👉 Recuperar sesión al refrescar
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("usuario"); // ✅ Buscamos el usuario guardado
+
     if (!token) return;
 
-    const fetchUser = async () => {
-      try {
-        const data = await apiMe();
-        console.log("Respuesta de /auth/me:", data);
-
-        const loggedUser: User = {
-          id: data.id,
-          nombre: data.nombre ?? "",
-          email: data.email,
-          rol: (data.roles?.[0] || "sin rol").toLowerCase(), // 👈 normalizamos
-        };
-
-        setUser(loggedUser);
-      } catch (err) {
-        console.error("Error al recuperar usuario:", err);
-        localStorage.removeItem("token");
-        setUser(null);
-      }
-    };
-
-    fetchUser();
+    if (storedUser) {
+      // Si ya tenemos el usuario en storage, lo cargamos directamente
+      const parsedUser = JSON.parse(storedUser);
+      setUser({
+        id_usuario: parsedUser.id_usuario,
+        nombre: parsedUser.nombre,
+        email: parsedUser.email,
+        rol: (parsedUser.rolUsuarios?.[0]?.rol?.rol || "sin rol").toLowerCase(),
+      });
+    } else {
+      // Si no hay usuario pero hay token, consultamos /auth/me
+      const fetchUser = async () => {
+        try {
+          const data = await apiMe();
+          const loggedUser: User = {
+            id_usuario: data.id_usuario || data.id,
+            nombre: data.nombre ?? "",
+            email: data.email,
+            rol: (data.roles?.[0] || "sin rol").toLowerCase(),
+          };
+          setUser(loggedUser);
+        } catch (err) {
+          console.error("Error al recuperar usuario:", err);
+          logout();
+        }
+      };
+      fetchUser();
+    }
   }, []);
 
-  // 👉 Login con /auth/login
+  // 👉 Login Corregido
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
       console.log("Enviando login con:", email, password);
       const data = await apiLogin(email, password);
       console.log("Respuesta de /auth/login:", data);
 
-      if (data.access_token) {
+      if (data.access_token && data.usuario) {
+        // 1. Guardar Token
         localStorage.setItem("token", data.access_token);
 
+        // 2. ✅ GUARDAR OBJETO USUARIO (VITAL para el Dashboard)
+        // Esto soluciona: "No se encontró el ID del usuario en storage"
+        localStorage.setItem("usuario", JSON.stringify(data.usuario));
+
+        // 3. Crear objeto de usuario para el estado
+        // Esto soluciona: "Cannot read properties of undefined (reading 'id_usuario')"
         const loggedUser: User = {
-          id: data.usuario.id_usuario,
+          id_usuario: data.usuario.id_usuario,
           nombre: data.usuario.nombre,
           email: data.usuario.email,
-          rol: (data.usuario.rolUsuarios?.[0]?.rol?.rol || "sin rol").toLowerCase(), // 👈 normalizamos
+          rol: (data.usuario.rolUsuarios?.[0]?.rol?.rol || "sin rol").toLowerCase(),
         };
 
         setUser(loggedUser);
@@ -77,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("usuario"); // ✅ También limpiamos el usuario
     setUser(null);
   };
 

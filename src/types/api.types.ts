@@ -1,5 +1,6 @@
 // Estructura general de tus respuestas de NestJS
 export type SuccessResponse<T> = {
+  totalDocs(totalDocs: any): unknown;
   success: boolean;
   message: string;
   data: T;
@@ -14,7 +15,7 @@ export type PaginatedResponse<T> = {
 };
 
 export interface PaginatedResponseMongo<T> {
-  docs: T[];
+  docs: T[];           // Aquí es donde vive tu array de categorías
   totalDocs: number;
   limit: number;
   totalPages: number;
