@@ -11,7 +11,7 @@ import ProveedorList from "./components/Proveedor/ProveedorList";
 import ColorList from "./components/Color/ColorList";
 import TallaList from "./components/Talla/TallaList";
 import ProductoList from "./components/Producto/ProductoList";
-import RegistroUsuario from "./components/Usuario/UsuarioForm";
+
 import VentaList from "./components/Venta/VentaList";
 import ClienteForm from "./components/Cliente/ClienteForm";
 
@@ -19,7 +19,10 @@ import HomeAdmin from "./components/layout/HomeAdmin";
 import HomeBodega from "./components/layout/HomeBodega";
 import CategoriaList from "./components/Categoria/CategoriaList";
 import NuevaVenta from "./components/Venta/VentaForm";
-import EmpleadoForm from "./components/Empleado/EmpleadoForm";
+
+import UsuarioList from "./components/Usuario/UsuarioList";
+import EmpleadoList from "./components/Empleado/EmpleadoList";
+
 function App() {
   return (
     <AuthProvider>
@@ -54,9 +57,9 @@ function App() {
             {/* Ruta por defecto: cuando entras a /admin te manda a /admin/dashboard */}
             <Route index element={<HomeAdmin />} />
 
-            <Route path="usuarios" element={<RegistroUsuario />} />
+            <Route path="usuarios" element={<UsuarioList />} />
             <Route path="ventas" element={<VentaList />} />
-            <Route path="reportes" element={<VentaReportes />} />
+            <Route path="empleados" element={<EmpleadoList/>} />
 
           </Route>
 

@@ -16,9 +16,19 @@ export async function createUsuario(usuario: CreateUsuarioDto): Promise<Usuario>
 }
 
 export async function listUsuarios(page: number = 1, limit: number = 10, search?: string) {
-  const query = search ? `&search=${search}&searchField=nombre` : "";
+  // Usamos URLSearchParams para evitar el error 500 por mala formación de URL
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+
+  if (search) {
+    params.append("search", search);
+    params.append("searchField", "nombre");
+  }
+
   const { data } = await client.get<UsuariosPaginatedResponse>(
-    `/usuario?page=${page}&limit=${limit}${query}`, 
+    `/usuario?${params.toString()}`, 
     getAuthHeaders()
   );
 
