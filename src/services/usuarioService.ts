@@ -1,68 +1,35 @@
-// services/usuarioService.ts
 import client from "../api/client";
+import type { 
+  Usuario, 
+  CreateUsuarioDto, 
+  UsuarioResponse, 
+  UsuariosPaginatedResponse 
+} from "../types/usuario.type";
 
-// Crear usuario
-export async function createUsuario(usuario: {
-  nombre: string;
-  email: string;
-  password: string;
-  id_empleado: string;
-  rolesIds: string[];
-}) {
-  const { data } = await client.post("/usuario", usuario, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`, // token del admin
-    },
-  });
-  return data.data; // devuelve el objeto creado
+const getAuthHeaders = () => ({
+  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+});
+
+export async function createUsuario(usuario: CreateUsuarioDto): Promise<Usuario> {
+  const { data } = await client.post<UsuarioResponse>("/usuario", usuario, getAuthHeaders());
+  return data.data;
 }
 
-// Listar usuarios
-export async function listUsuarios(page: number = 1, limit: number = 10) {
-  const { data } = await client.get(`/usuario?page=${page}&limit=${limit}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const payload = data.data; // { data: [...], total, page, limit }
+export async function listUsuarios(page: number = 1, limit: number = 10, search?: string) {
+  const query = search ? `&search=${search}&searchField=nombre` : "";
+  const { data } = await client.get<UsuariosPaginatedResponse>(
+    `/usuario?page=${page}&limit=${limit}${query}`, 
+    getAuthHeaders()
+  );
 
   return {
-    docs: Array.isArray(payload.data) ? payload.data : [],
-    totalPages: Math.ceil((payload.total ?? 0) / (payload.limit ?? limit)),
-    totalDocs: payload.total ?? 0,
-    page: payload.page ?? page,
-    limit: payload.limit ?? limit,
+    docs: data.data.data || [],
+    totalDocs: data.data.total,
+    page: data.data.page,
+    limit: data.data.limit,
   };
 }
 
-// Obtener un usuario por ID
-export async function getUsuarioById(id_usuario: string) {
-  const { data } = await client.get(`/usuario/${id_usuario}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-  return data.data;
+export async function deleteUsuario(id_usuario: string): Promise<void> {
+  await client.delete(`/usuario/${id_usuario}`, getAuthHeaders());
 }
-
-// Actualizar usuario
-export async function updateUsuario(id_usuario: string, usuario: any) {
-  const { data } = await client.put(`/usuario/${id_usuario}`, usuario, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-  return data.data;
-}
-
-// Eliminar usuario
-export async function deleteUsuario(id_usuario: string) {
-  const { data } = await client.delete(`/usuario/${id_usuario}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-  return data.data;
-}
-

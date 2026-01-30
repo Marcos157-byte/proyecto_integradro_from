@@ -14,11 +14,12 @@ import ProductoList from "./components/Producto/ProductoList";
 import RegistroUsuario from "./components/Usuario/UsuarioForm";
 import VentaList from "./components/Venta/VentaList";
 import ClienteForm from "./components/Cliente/ClienteForm";
-import VentaReportes from "./components/Venta/VentaReposte";
+
 import HomeAdmin from "./components/layout/HomeAdmin";
 import HomeBodega from "./components/layout/HomeBodega";
 import CategoriaList from "./components/Categoria/CategoriaList";
 import NuevaVenta from "./components/Venta/VentaForm";
+import EmpleadoForm from "./components/Empleado/EmpleadoForm";
 function App() {
   return (
     <AuthProvider>
@@ -55,7 +56,8 @@ function App() {
 
             <Route path="usuarios" element={<RegistroUsuario />} />
             <Route path="ventas" element={<VentaList />} />
-            <Route path="reportes" element={<VentaReportes />} />
+            <Route path="empleados" element={<EmpleadoForm />} />
+            
 
           </Route>
 

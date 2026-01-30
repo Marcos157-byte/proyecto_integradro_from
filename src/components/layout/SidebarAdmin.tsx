@@ -1,12 +1,15 @@
 import React, { useMemo } from "react";
 import {
   Drawer, List, ListItemIcon, ListItemText, ListItemButton,
-  Box, Typography, Divider, alpha, styled, 
+  Box, Typography, Divider, alpha, 
   useTheme, useMediaQuery, IconButton
 } from "@mui/material";
 import {
-  DashboardRounded as DashboardIcon, PeopleRounded as PeopleIcon,
-  ShoppingCartRounded as ShoppingCartIcon, AssessmentRounded as AssessmentIcon,
+  DashboardRounded as DashboardIcon, 
+  PeopleRounded as PeopleIcon,
+  BadgeRounded as BadgeIcon, // 👈 ¡IMPORTANTE! Agregué esta importación
+  ShoppingCartRounded as ShoppingCartIcon, 
+  AssessmentRounded as AssessmentIcon,
   ChevronLeftRounded as ChevronLeftIcon
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -24,7 +27,6 @@ export default function SidebarAdmin({ open, onToggle }: SidebarProps) {
   const location = useLocation();
   const theme = useTheme();
   
-  // Detectamos si es pantalla móvil
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const menuGroups = useMemo(() => [
@@ -33,6 +35,7 @@ export default function SidebarAdmin({ open, onToggle }: SidebarProps) {
       items: [
         { text: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
         { text: "Usuarios", icon: <PeopleIcon />, path: "/admin/usuarios" },
+        { text: "Empleados", icon: <BadgeIcon />, path: "/admin/empleados" }, // 👈 Agregado con su icono
       ]
     },
     {
@@ -42,12 +45,10 @@ export default function SidebarAdmin({ open, onToggle }: SidebarProps) {
         { text: "Reportes", icon: <AssessmentIcon />, path: "/admin/reportes" },
       ]
     }
-  ], []);
+  ], []); // Las dependencias están bien vacías porque los items son estáticos
 
-  // Función para manejar la navegación y cerrar el menú
   const handleNavigation = (path: string) => {
     navigate(path);
-    // SI es móvil, ejecutamos onToggle para cerrar el menú automáticamente
     if (isMobile) {
       onToggle();
     }
@@ -57,7 +58,7 @@ export default function SidebarAdmin({ open, onToggle }: SidebarProps) {
     <Drawer 
       variant={isMobile ? "temporary" : "permanent"} 
       open={open} 
-      onClose={onToggle} // Esto permite cerrar al hacer clic fuera del menú
+      onClose={onToggle} 
       ModalProps={{ keepMounted: true }} 
       PaperProps={{
         sx: {
@@ -91,12 +92,18 @@ export default function SidebarAdmin({ open, onToggle }: SidebarProps) {
       <Box sx={{ flexGrow: 1, overflowY: 'auto', py: 2 }}>
         {menuGroups.map((group) => (
           <React.Fragment key={group.title}>
+            {/* Opcional: Podrías mostrar el título del grupo si el menú está abierto */}
+            {open && (
+               <Typography variant="caption" sx={{ px: 3, py: 1, display: 'block', opacity: 0.4, fontWeight: 700, textTransform: 'uppercase' }}>
+                 {group.title}
+               </Typography>
+            )}
             <List>
               {group.items.map((item) => (
                 <ListItemButton 
                   key={item.text}
                   selected={location.pathname === item.path}
-                  onClick={() => handleNavigation(item.path)} // <--- Aquí ocurre la magia
+                  onClick={() => handleNavigation(item.path)}
                   sx={{
                     margin: "4px 14px",
                     borderRadius: "10px",
@@ -113,7 +120,7 @@ export default function SidebarAdmin({ open, onToggle }: SidebarProps) {
                   <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : "auto", color: "inherit", justifyContent: "center" }}>
                     {item.icon}
                   </ListItemIcon>
-                  {open && <ListItemText primary={item.text} />}
+                  {open && <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />}
                 </ListItemButton>
               ))}
             </List>
