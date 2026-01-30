@@ -24,6 +24,9 @@ import UsuarioList from "./components/Usuario/UsuarioList";
 import EmpleadoList from "./components/Empleado/EmpleadoList";
 import CajaGestion from "./components/Caja/CajaGestion";
 import ClienteList from "./components/Cliente/ClienteList";
+import StockConsulta from "./components/Producto/StockConsulta";
+import ReporteVentasUsuarios from "./components/Venta/ReporteVentasUsuarios";
+
 
 function App() {
   return (
@@ -48,6 +51,7 @@ function App() {
             <Route path="caja" element={<CajaGestion/>} />
             <Route path="lista" element={<VentaList/>} />
             <Route path="cliente" element={<ClienteList/>} />
+            <Route path="inventario" element={<StockConsulta/>} />
           </Route>
 
           {/* Administrador */}
@@ -63,7 +67,7 @@ function App() {
             <Route index element={<HomeAdmin />} />
 
             <Route path="usuarios" element={<UsuarioList />} />
-            <Route path="ventas" element={<VentaList />} />
+            <Route path="ventas" element={<ReporteVentasUsuarios />} />
             <Route path="empleados" element={<EmpleadoList/>} />
 
           </Route>
