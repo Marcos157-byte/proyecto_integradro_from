@@ -56,8 +56,7 @@ function App() {
 
             <Route path="usuarios" element={<RegistroUsuario />} />
             <Route path="ventas" element={<VentaList />} />
-            <Route path="empleados" element={<EmpleadoForm />} />
-            
+            <Route path="reportes" element={<VentaReportes />} />
 
           </Route>
 

@@ -13,7 +13,7 @@ export default function TopProductsChart({ data }: { data: any[] }) {
           <YAxis dataKey="nombre" type="category" width={100} style={{ fontSize: '12px' }} />
           <Tooltip cursor={{fill: 'transparent'}} />
           <Bar dataKey="total_vendido" radius={[0, 10, 10, 0]}>
-            {data.map((entry, index) => (
+            {data.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Bar>

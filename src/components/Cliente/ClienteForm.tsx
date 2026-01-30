@@ -51,7 +51,7 @@ export default function ClienteForm() {
       </Typography>
       <Box component="form" onSubmit={handleSubmit}>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               label="Nombre"
               name="nombre"
@@ -62,7 +62,7 @@ export default function ClienteForm() {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Cédula"
               name="cedula"
@@ -73,7 +73,7 @@ export default function ClienteForm() {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Teléfono"
               name="telefono"
@@ -84,7 +84,7 @@ export default function ClienteForm() {
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               label="Email"
               name="email"
@@ -96,7 +96,7 @@ export default function ClienteForm() {
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               label="Dirección"
               name="direccion"
@@ -109,7 +109,7 @@ export default function ClienteForm() {
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Button type="submit" variant="contained" color="primary" fullWidth>
               Guardar Cliente
             </Button>

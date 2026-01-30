@@ -80,25 +80,25 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
         ) : (
           <Grid container spacing={2} sx={{ mt: 1 }}>
             {/* Nombre */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12}}>
               <TextField label="Nombre del Producto" fullWidth value={form.nombre} 
                 onChange={(e) => setForm({...form, nombre: e.target.value})} />
             </Grid>
 
             {/* Precio */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6}}>
               <TextField label="Precio ($)" type="number" fullWidth value={form.precio}
                 onChange={(e) => setForm({...form, precio: Number(e.target.value)})} />
             </Grid>
 
             {/* Stock */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField label="Stock Inicial" type="number" fullWidth value={form.stock_total}
                 onChange={(e) => setForm({...form, stock_total: Number(e.target.value)})} />
             </Grid>
 
             {/* Categoría (Mongo) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6}}>
               <TextField select label="Categoría" fullWidth value={form.id_categoria}
                 onChange={(e) => setForm({...form, id_categoria: e.target.value})}>
                 {categorias.map((c) => (
@@ -108,7 +108,7 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
             </Grid>
 
             {/* Talla (Mongo) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6}}>
               <TextField select label="Talla" fullWidth value={form.id_talla}
                 onChange={(e) => setForm({...form, id_talla: e.target.value})}>
                 {tallas.map((t) => (
@@ -118,7 +118,7 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
             </Grid>
 
             {/* Color (Postgres) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField select label="Color" fullWidth value={form.id_color}
                 onChange={(e) => setForm({...form, id_color: e.target.value})}>
                 {colores.map((col) => (
@@ -128,7 +128,7 @@ export default function ModalCrearProducto({ open, onClose, onSave }: any) {
             </Grid>
 
             {/* Proveedor (Postgres) */}
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField select label="Proveedor" fullWidth value={form.id_proveedor}
                 onChange={(e) => setForm({...form, id_proveedor: e.target.value})}>
                 {proveedores.map((p) => (

@@ -3,8 +3,7 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, TextField, 
   InputAdornment, IconButton, CircularProgress,
-  Button, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions, Grid,
-  type Color
+  Button, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
 import { 
   SearchRounded as SearchIcon, 
@@ -13,27 +12,23 @@ import {
   DeleteRounded as DeleteIcon,
   PaletteRounded as ColorIcon
 } from "@mui/icons-material";
+
+// Importamos servicios y NUESTRA interfaz Color (no la de MUI)
 import { createColor, deleteColor, getColores, updateColor } from "../../services/colorService";
-
-// Importamos los servicios y tipos
-
+import type { Color } from "../../types/color.types";
 
 export default function ColorList() {
   const [colores, setColores] = useState<Color[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   
-  // Paginación (Postgres)
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalDocs, setTotalDocs] = useState(0);
 
-  // Estados del Modal
   const [openModal, setOpenModal] = useState(false);
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
-  const [form, setForm] = useState({
-    color: "" // Nombre del color según tu entidad
-  });
+  const [form, setForm] = useState({ color: "" });
 
   const cargarColores = async () => {
     setLoading(true);
@@ -42,11 +37,15 @@ export default function ColorList() {
         page: page + 1,
         limit: rowsPerPage,
         search,
-        searchField: 'color' // Busca en la columna 'color'
+        searchField: 'color'
       });
-      // Postgres: success -> data -> data (array)
-      setColores(response.data.data);
-      setTotalDocs(response.data.total);
+
+      // CORRECCIÓN: Acceso según ColoresPaginadosResponse
+      // response es el objeto que viene del service
+      if (response.data) {
+        setColores(response.data.data); // El array está en data.data
+        setTotalDocs(response.data.total); // El total está en data.total
+      }
     } catch (error) {
       console.error("Error cargando colores:", error);
     } finally {
@@ -60,11 +59,7 @@ export default function ColorList() {
 
   const handleOpenModal = (colorObj: Color | null = null) => {
     setSelectedColor(colorObj);
-    if (colorObj) {
-      setForm({ color: colorObj.color });
-    } else {
-      setForm({ color: "" });
-    }
+    setForm({ color: colorObj ? colorObj.color : "" });
     setOpenModal(true);
   };
 
@@ -84,7 +79,7 @@ export default function ColorList() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("¿Estás seguro de eliminar este color? Los productos asociados podrían verse afectados.")) {
+    if (window.confirm("¿Estás seguro de eliminar este color?")) {
       try {
         await deleteColor(id);
         cargarColores();
@@ -96,13 +91,12 @@ export default function ColorList() {
 
   return (
     <Box sx={{ p: 4 }}>
-      {/* Encabezado */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <ColorIcon sx={{ fontSize: 40, color: '#3a7afe' }} />
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 900 }}>Paleta de <span style={{ color: "#3a7afe" }}>Colores</span></Typography>
-            <Typography variant="body1" color="text.secondary">Gestión de atributos para productos (PostgreSQL).</Typography>
+            <Typography variant="body1" color="text.secondary">Gestión de atributos PostgreSQL.</Typography>
           </Box>
         </Box>
         <Button 
@@ -116,17 +110,15 @@ export default function ColorList() {
       </Box>
 
       <Paper sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-        {/* Buscador */}
         <Box sx={{ p: 3, bgcolor: '#f8fafc' }}>
           <TextField 
             fullWidth 
-            placeholder="Buscar color por nombre..." 
+            placeholder="Buscar color..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)}
             InputProps={{ 
               startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> 
             }} 
-            sx={{ bgcolor: 'white' }}
           />
         </Box>
 
@@ -141,15 +133,13 @@ export default function ColorList() {
             </TableHead>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 3 }}><CircularProgress /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} align="center"><CircularProgress /></TableCell></TableRow>
               ) : colores.length === 0 ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 3 }}>No hay colores registrados.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} align="center">No hay registros.</TableCell></TableRow>
               ) : (
                 colores.map((c) => (
                   <TableRow key={c.id_color} hover>
-                    <TableCell sx={{ color: 'text.secondary', fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                      {c.id_color}
-                    </TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{c.id_color}</TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: '#3a7afe' }} />
@@ -180,33 +170,22 @@ export default function ColorList() {
         />
       </Paper>
 
-      {/* Modal para Crear/Editar */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 800 }}>
           {selectedColor ? "Editar Color" : "Nuevo Color"}
         </DialogTitle>
         <DialogContent dividers>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField 
-                fullWidth 
-                label="Nombre del Color (ej: Azul Marino)" 
-                value={form.color} 
-                onChange={(e) => setForm({ color: e.target.value })} 
-                autoFocus
-              />
-            </Grid>
-          </Grid>
+          <TextField 
+            fullWidth 
+            label="Nombre del Color" 
+            value={form.color} 
+            onChange={(e) => setForm({ color: e.target.value })} 
+            sx={{ mt: 2 }}
+          />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setOpenModal(false)} color="inherit">Cancelar</Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSave} 
-            disabled={!form.color.trim()}
-          >
-            Guardar
-          </Button>
+          <Button onClick={() => setOpenModal(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleSave} disabled={!form.color.trim()}>Guardar</Button>
         </DialogActions>
       </Dialog>
     </Box>
