@@ -11,7 +11,7 @@ import client from "../../api/client";
 
 // Importación de tipos
 import type { Producto } from "../../types/producto.types";
-import type { Cliente } from "../../types/cliente.dto";
+import type { Cliente } from "../../types/cliente.type";
 import type { CreateVentaDto, CreateVentaDetalleDto } from "../../types/venta.types";
 
 /**
@@ -136,7 +136,7 @@ export default function NuevaVenta() {
 
       setTimeout(() => setSuccess(false), 4000);
     } catch (err: any) {
-      const serverMsg = err.response?.data?.message || "Error interno al procesar la venta.";
+      const serverMsg = err.response?.data?.message || "Error interno al procesar la venta Primero tiene que abrir la caja para poder finalizar las ventas.";
       setError(Array.isArray(serverMsg) ? serverMsg.join(", ") : serverMsg);
     } finally {
       setCargando(false);

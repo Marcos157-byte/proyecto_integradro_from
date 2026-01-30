@@ -13,7 +13,7 @@ import TallaList from "./components/Talla/TallaList";
 import ProductoList from "./components/Producto/ProductoList";
 
 import VentaList from "./components/Venta/VentaList";
-import ClienteForm from "./components/Cliente/ClienteForm";
+
 
 import HomeAdmin from "./components/layout/HomeAdmin";
 import HomeBodega from "./components/layout/HomeBodega";
@@ -22,6 +22,8 @@ import NuevaVenta from "./components/Venta/VentaForm";
 
 import UsuarioList from "./components/Usuario/UsuarioList";
 import EmpleadoList from "./components/Empleado/EmpleadoList";
+import CajaGestion from "./components/Caja/CajaGestion";
+import ClienteList from "./components/Cliente/ClienteList";
 
 function App() {
   return (
@@ -40,9 +42,12 @@ function App() {
               </PrivateRoute>
             }
           >
-            <Route path="clientes" element={<ClienteForm />} />
+              
             <Route index element={<HomeVentas/>} />
-            <Route path="/ventas/nueva" element={<NuevaVenta/>} />
+            <Route path="nueva" element={<NuevaVenta/>} />
+            <Route path="caja" element={<CajaGestion/>} />
+            <Route path="lista" element={<VentaList/>} />
+            <Route path="cliente" element={<ClienteList/>} />
           </Route>
 
           {/* Administrador */}

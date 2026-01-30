@@ -37,13 +37,13 @@ export async function registrarVenta(ventaData: CreateVentaDto): Promise<VentaRe
   return data.data;
 }
 
-/**
- * 4. Listar historial de ventas (Paginado)
- */
-export async function listarVentas(page = 1, limit = 10, search?: string) {
-  // Usamos PaginatedResponse para que sepa que viene 'total', 'page', 'limit' y 'data'
-  const { data } = await client.get<SuccessResponse<PaginatedResponse<VentaResponse>>>(PATH, {
-    params: { page, limit, search }
-  });
+
+
+export async function listarMisVentas(page = 1, limit = 10) {
+  // Cambiamos la ruta a `${PATH}/mis-ventas`
+  const { data } = await client.get<SuccessResponse<PaginatedResponse<VentaResponse>>>(
+    `${PATH}/mis-ventas`, 
+    { params: { page, limit } }
+  );
   return data.data;
 }

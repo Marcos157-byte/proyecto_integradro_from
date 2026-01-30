@@ -1,13 +1,26 @@
 import client from "../api/client";
-import type { CajaSingleResponse, CreateCajaDto } from "../types/caja.types";
+import type { CajaEstadoResponse, CajaCierreResponse } from "../types/caja.types";
 
-export const abrirCaja = async (dto: CreateCajaDto): Promise<CajaSingleResponse> => {
-  // Enviamos el dto que ya contiene el monto_apertura como número
-  const { data } = await client.post<CajaSingleResponse>("/caja/abrir", dto);
+const PATH = "/caja";
+
+// 1. Ver si hay caja abierta al cargar la página
+export const getEstadoCaja = async (): Promise<CajaEstadoResponse> => {
+  const { data } = await client.get(`${PATH}/estado-actual`);
+  return data; // Retorna el SuccessResponse completo
+};
+
+// 2. Abrir la caja (Enviamos el monto como número)
+export const abrirCaja = async (monto_apertura: number) => {
+  const { data } = await client.post(`${PATH}/abrir`, { 
+    monto_apertura: Number(monto_apertura) 
+  });
   return data;
 };
 
-export const getEstadoCaja = async (): Promise<CajaSingleResponse> => {
-  const { data } = await client.get<CajaSingleResponse>("/caja/estado");
+// 3. Cerrar la caja y recibir el arqueo
+export const cerrarCaja = async (monto_cierre: number): Promise<CajaCierreResponse> => {
+  const { data } = await client.post(`${PATH}/cerrar`, { 
+    monto_cierre: Number(monto_cierre) 
+  });
   return data;
 };

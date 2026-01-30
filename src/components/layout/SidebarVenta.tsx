@@ -37,11 +37,11 @@ export default function SidebarVentas({ open, onToggle }: SidebarProps) {
         { text: "Historial Ventas", icon: <ListAltIcon />, path: "/ventas/lista" },
         { text: "Control de Caja", icon: <CashIcon />, path: "/ventas/caja" },
       ]
-    },
+    },                                                                                                                                        
     {
       title: "Catálogos",
       items: [
-        { text: "Mis Clientes", icon: <PeopleIcon />, path: "/ventas/clientes" },
+        { text: "Mis Clientes", icon: <PeopleIcon />, path: "/ventas/cliente" },
         { text: "Consultar Stock", icon: <InventoryIcon />, path: "/ventas/inventario" },
       ]
     }

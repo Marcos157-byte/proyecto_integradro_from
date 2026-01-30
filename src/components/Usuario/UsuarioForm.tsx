@@ -1,157 +1,145 @@
 import React, { useState, useEffect } from "react";
 import { 
-  TextField, Button, MenuItem, Select, InputLabel, 
-  FormControl, Box, Typography, Paper, Checkbox, 
-  ListItemText, OutlinedInput, Alert, CircularProgress, Grid, Avatar
-} from "@mui/material";
-import { PersonAdd as PersonIcon } from "@mui/icons-material";
+  TextField, Button, Box, Typography, Paper, 
+  Alert, CircularProgress, Grid, Avatar} from "@mui/material";
+import { PersonAdd as PersonIcon, Save as SaveIcon } from "@mui/icons-material";
+import { createUsuario, updateUsuario } from "../../services/usuarioService";
+import type { Usuario, CreateUsuarioDto } from "../../types/usuario.type";
 
-// Servicios
-import { createUsuario } from "../../services/usuarioService";
-import { listEmpleados } from "../../services/empleadoService";
-import { getRoles } from "../../services/rol.service";
-
-// Interfaz para corregir el error de onSuccess en el padre
 interface UsuarioFormProps {
+  usuarioEdit?: Usuario | null; // Cambiado para coincidir con la prop que pasas en UsuarioList
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export default function UsuarioForm({ onSuccess }: UsuarioFormProps) {
-  const [roles, setRoles] = useState<any[]>([]);
-  const [empleados, setEmpleados] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function UsuarioForm({ usuarioEdit, onSuccess, onCancel }: UsuarioFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: 'error' | 'success', msg: string } | null>(null);
 
-  const [form, setForm] = useState({
+  // Estado del formulario basado en CreateUsuarioDto
+  const [form, setForm] = useState<CreateUsuarioDto>({
     nombre: "",
     email: "",
     password: "",
-    id_empleado: "",
-    rolesIds: [] as string[],
+    id_empleado: "", // Debe ser un UUID válido de un empleado
+    rolesIds: []     // Array de IDs de roles
   });
 
+  // EFECTO: Carga datos si es edición
   useEffect(() => {
-    const cargarCatalogos = async () => {
-      try {
-        setLoading(true);
-        const [resRoles, resEmpleados] = await Promise.all([
-          getRoles(1, 100),
-          listEmpleados(1, 100)
-        ]);
-        setRoles(resRoles.data?.data || []);
-        setEmpleados(resEmpleados.docs || []);
-      } catch (err) {
-        setStatus({ type: 'error', msg: "Error al cargar datos" });
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargarCatalogos();
-  }, []);
+    if (usuarioEdit) {
+      setForm({
+        nombre: usuarioEdit.nombre || "",
+        email: usuarioEdit.email || "",
+        password: "", // Normalmente no se edita el password aquí por seguridad
+        id_empleado: usuarioEdit.empleado?.id_empleado || "",
+        rolesIds: usuarioEdit.rolUsuarios?.map(r => r.rol.id_rol) || []
+      });
+    } else {
+      setForm({ nombre: "", email: "", password: "", id_empleado: "", rolesIds: [] });
+    }
+  }, [usuarioEdit]);
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setStatus(null);
+
     try {
-      await createUsuario(form);
-      setStatus({ type: 'success', msg: "¡Usuario registrado correctamente!" });
-      setTimeout(() => onSuccess(), 1500); 
+      if (usuarioEdit?.id_usuario) {
+        // En edición, el password puede ser opcional
+        const { password, ...updateData } = form;
+        await updateUsuario(usuarioEdit.id_usuario, password ? form : updateData);
+        setStatus({ type: 'success', msg: "¡Usuario actualizado con éxito!" });
+      } else {
+        await createUsuario(form);
+        setStatus({ type: 'success', msg: "¡Usuario creado correctamente!" });
+      }
+      setTimeout(() => onSuccess(), 1000);
     } catch (err: any) {
-      setStatus({ type: 'error', msg: err.response?.data?.message || "Error al registrar" });
+      setStatus({ type: 'error', msg: err.response?.data?.message || "Error al procesar el usuario" });
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Box>;
-
   return (
-    /* ESTILO ANTIGUO: Paper con sombra 3 y bordes muy redondeados */
-    <Paper sx={{ p: 4, maxWidth: 650, mx: "auto", mt: 4, borderRadius: 3, boxShadow: 3 }}>
+    <Paper sx={{ p: 4, maxWidth: 700, mx: "auto", mt: 2, borderRadius: 4, boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-        <Avatar sx={{ bgcolor: '#4f69f9', mb: 1, width: 56, height: 56 }}>
+        <Avatar sx={{ bgcolor: '#4f69f9', mb: 1, width: 60, height: 60 }}>
           <PersonIcon fontSize="large" />
         </Avatar>
-        <Typography variant="h5" fontWeight="bold" color="#1e293b">
-          Nuevo Acceso
+        <Typography variant="h5" fontWeight="800" color="#1e293b">
+          {usuarioEdit ? "Editar Usuario" : "Registro de Usuario"}
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          Complete los campos para gestionar el acceso al sistema
         </Typography>
       </Box>
 
-      {status && <Alert severity={status.type} sx={{ mb: 2 }}>{status.msg}</Alert>}
+      {status && <Alert severity={status.type} sx={{ mb: 3, borderRadius: 2 }}>{status.msg}</Alert>}
 
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-        
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <TextField label="Nombre de Usuario" name="nombre" value={form.nombre} fullWidth required onChange={handleChange} />
+          <Grid size={12}>
+            <TextField label="Nombre del Usuario" name="nombre" value={form.nombre} fullWidth required onChange={handleChange} variant="filled" />
           </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField label="Correo Electrónico" name="email" type="email" value={form.email} fullWidth required onChange={handleChange} />
+          
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField label="Correo Electrónico" name="email" type="email" value={form.email} fullWidth required onChange={handleChange} variant="filled" />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField 
+              label={usuarioEdit ? "Nueva Contraseña (opcional)" : "Contraseña"} 
+              name="password" 
+              type="password" 
+              value={form.password} 
+              fullWidth 
+              required={!usuarioEdit} 
+              onChange={handleChange} 
+              variant="filled" 
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <TextField 
+              label="ID del Empleado (UUID)" 
+              name="id_empleado" 
+              value={form.id_empleado} 
+              fullWidth 
+              required 
+              onChange={handleChange} 
+              helperText="Vincule este usuario a un empleado existente"
+              variant="filled"
+            />
           </Grid>
         </Grid>
 
-        <TextField label="Contraseña" name="password" type="password" value={form.password} fullWidth required onChange={handleChange} />
-
-        <FormControl fullWidth required>
-          <InputLabel>Vincular con Empleado</InputLabel>
-          <Select 
-            name="id_empleado" 
-            value={form.id_empleado} 
-            label="Vincular con Empleado" 
-            onChange={handleChange}
+        <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+          <Button 
+            fullWidth 
+            variant="text" 
+            onClick={onCancel} 
+            sx={{ borderRadius: 2, color: '#64748b', fontWeight: 700, textTransform: 'none' }}
           >
-            {empleados.map((emp) => (
-              <MenuItem key={emp.id_empleado} value={emp.id_empleado}>
-                {emp.nombre} {emp.apellido} ({emp.cedula})
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth required>
-          <InputLabel>Asignar Roles</InputLabel>
-          <Select
-            multiple
-            name="rolesIds"
-            value={form.rolesIds}
-            onChange={handleChange}
-            input={<OutlinedInput label="Asignar Roles" />}
-            renderValue={(selected) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {(selected as string[]).map(id => (
-                  <Typography key={id} sx={{ bgcolor: '#eef2ff', color: '#4f69f9', px: 1, borderRadius: 1, fontSize: '0.75rem', fontWeight: 'bold' }}>
-                    {roles.find(r => r.id_rol === id)?.rol.toUpperCase()}
-                  </Typography>
-                ))}
-              </Box>
-            )}
+            Cancelar
+          </Button>
+          <Button 
+            type="submit" 
+            fullWidth 
+            variant="contained" 
+            disabled={submitting}
+            startIcon={!submitting && <SaveIcon />}
+            sx={{ py: 1.5, fontWeight: 800, borderRadius: 2, bgcolor: '#4f69f9', textTransform: 'none', boxShadow: '0 4px 14px rgba(79, 105, 249, 0.4)' }}
           >
-            {roles.map((rol) => (
-              <MenuItem key={rol.id_rol} value={rol.id_rol}>
-                <Checkbox checked={form.rolesIds.indexOf(rol.id_rol) > -1} />
-                <ListItemText primary={rol.rol.toUpperCase()} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Button 
-          type="submit" 
-          variant="contained" 
-          disabled={submitting}
-          sx={{ 
-            mt: 2, py: 1.5, fontWeight: 'bold', borderRadius: 2,
-            bgcolor: '#4f69f9', '&:hover': { bgcolor: '#3f51b5' }
-          }}
-        >
-          {submitting ? <CircularProgress size={24} color="inherit" /> : "REGISTRAR ACCESO"}
-        </Button>
+            {submitting ? <CircularProgress size={24} color="inherit" /> : "Guardar Usuario"}
+          </Button>
+        </Box>
       </Box>
     </Paper>
   );
