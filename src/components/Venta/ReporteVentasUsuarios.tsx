@@ -175,7 +175,7 @@ export default function ReporteVentasUsuarios() {
 
       <Grid container spacing={3}>
         {/* Panel Izquierdo: Resumen */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Card sx={{ borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <Avatar sx={{ width: 80, height: 80, mx: 'auto', mb: 2, bgcolor: '#4f69f9' }}>
@@ -198,7 +198,7 @@ export default function ReporteVentasUsuarios() {
         </Grid>
 
         {/* Panel Derecho: Listado de Ventas con Paginación */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, sm: 8 }}>
           <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
             <ReceiptIcon /> Historial de Transacciones
           </Typography>
