@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { 
-  Box, TextField, Button, Typography, Grid, Paper, 
-  MenuItem, Divider, Alert, CircularProgress, Avatar 
+  Box, TextField, Button, Typography, Paper, 
+  MenuItem, Divider, Alert, CircularProgress, Avatar, Stack 
 } from "@mui/material";
+import Grid from "@mui/material/Grid"; 
 import { 
-  Save as SaveIcon, 
   PersonAdd as PersonIcon,
-  ArrowBack as ArrowBackIcon 
+  ArrowBack as ArrowBackIcon,
+  BadgeRounded as BadgeIcon,
+  LocationOnRounded as MapIcon
 } from "@mui/icons-material";
 
 import type { CreateEmpleadoDto } from "../../types/empleado.type";
@@ -14,7 +16,7 @@ import { createEmpleado, updateEmpleado } from "../../services/empleadoService";
 
 interface Props {
   empleado?: any; 
-  onSuccess: () => void; // Esta función nos sirve para volver a la lista
+  onSuccess: () => void;
 }
 
 export default function EmpleadoForm({ empleado, onSuccess }: Props) {
@@ -54,9 +56,13 @@ export default function EmpleadoForm({ empleado, onSuccess }: Props) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "edad" ? Number(value) : value,
+      // Si es edad, validamos que no sea negativo al escribir. Otros campos a Mayúsculas.
+      [name]: name === "edad" 
+        ? Math.max(0, Number(value)) 
+        : value.toUpperCase(),
     }));
   };
 
@@ -79,98 +85,133 @@ export default function EmpleadoForm({ empleado, onSuccess }: Props) {
     }
   };
 
+  // ESTILOS BRUTALISTAS
+  const inputStyles = {
+    bgcolor: '#fff !important',
+    borderRadius: 0,
+    '& .MuiOutlinedInput-notchedOutline': { borderWidth: '2px', borderColor: '#000' },
+    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#000' },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3a7afe' },
+    '& input, & .MuiSelect-select': { fontWeight: 800, textTransform: 'uppercase' },
+    // OCULTAR FLECHAS DE NÚMERO
+    '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+      '-webkit-appearance': 'none',
+      margin: 0,
+    },
+    '& input[type=number]': {
+      '-moz-appearance': 'textfield',
+    },
+  };
+
   return (
-    <Box>
-      {/* BOTÓN VOLVER (Igual que en UsuarioForm) */}
+    <Box sx={{ bgcolor: '#f0f0f0', minHeight: '100vh', p: 4 }}>
       <Button 
         startIcon={<ArrowBackIcon />} 
         onClick={onSuccess}
-        sx={{ mb: 3, fontWeight: 700, color: '#64748b' }}
+        sx={{ mb: 3, fontWeight: 900, color: '#000', '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } }}
       >
-        Volver a la Lista
+        REGRESAR_AL_LISTADO
       </Button>
 
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 4, maxWidth: 900, mx: "auto" }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <Avatar sx={{ bgcolor: "#3a7afe", mr: 2 }}>
-            <PersonIcon />
+      <Paper sx={{ 
+        p: 0, maxWidth: 900, mx: "auto", borderRadius: 0, 
+        border: '4px solid #000', boxShadow: '12px 12px 0px #000',
+        overflow: 'hidden'
+      }}>
+        <Box sx={{ bgcolor: '#000', p: 3, display: 'flex', alignItems: 'center', gap: 3 }}>
+          <Avatar sx={{ bgcolor: '#3a7afe', width: 60, height: 60, borderRadius: 0, border: '3px solid #fff' }}>
+            <PersonIcon sx={{ fontSize: 35 }} />
           </Avatar>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>
-            {empleado ? "Editar Información de Empleado" : "Nuevo Registro de Empleado"}
-          </Typography>
+          <Box>
+            <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: '1.4rem', lineHeight: 1 }}>
+              {empleado ? "ACTUALIZAR_FICHA_EMPLEADO" : "REGISTRO_NUEVA_IDENTIDAD"}
+            </Typography>
+            <Typography sx={{ color: '#3a7afe', fontFamily: 'monospace', fontWeight: 800, mt: 0.5 }}>
+              HR_SYSTEM // DATABASE_ENTRY_v2
+            </Typography>
+          </Box>
         </Box>
 
-        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 3 }}>¡Datos guardados con éxito! ✅</Alert>}
+        <Box component="form" onSubmit={handleSubmit} sx={{ p: 4 }}>
+          {error && <Alert severity="error" variant="filled" sx={{ mb: 3, borderRadius: 0, fontWeight: 800, border: '2px solid #000' }}>{error}</Alert>}
+          {success && <Alert severity="success" variant="filled" sx={{ mb: 3, borderRadius: 0, fontWeight: 800, border: '2px solid #000' }}>DATOS_ALMACENADOS_CORRECTAMENTE ✅</Alert>}
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            {/* Campos del Formulario */}
+          <Typography variant="overline" sx={{ fontWeight: 900, color: '#666' }}>I. DATOS_NOMINALES</Typography>
+          <Grid container spacing={3} sx={{ mt: 0 }}>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="Primer Nombre" name="nombre" required value={formData.nombre} onChange={handleChange} />
+              <TextField fullWidth label="PRIMER_NOMBRE" name="nombre" required value={formData.nombre} onChange={handleChange} InputProps={{ sx: inputStyles }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="Segundo Nombre" name="segundoNombre" value={formData.segundoNombre} onChange={handleChange} />
+              <TextField fullWidth label="SEGUNDO_NOMBRE" name="segundoNombre" value={formData.segundoNombre} onChange={handleChange} InputProps={{ sx: inputStyles }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="Primer Apellido" name="apellido" required value={formData.apellido} onChange={handleChange} />
+              <TextField fullWidth label="PRIMER_APELLIDO" name="apellido" required value={formData.apellido} onChange={handleChange} InputProps={{ sx: inputStyles }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="Segundo Apellido" name="segundoApellido" required value={formData.segundoApellido} onChange={handleChange} />
+              <TextField fullWidth label="SEGUNDO_APELLIDO" name="segundoApellido" required value={formData.segundoApellido} onChange={handleChange} InputProps={{ sx: inputStyles }} />
             </Grid>
 
-            <Divider sx={{ width: "100%", my: 2, opacity: 0.5 }} />
+            <Grid size={12}><Divider sx={{ borderBottomWidth: 3, borderColor: '#000', my: 1 }} /></Grid>
+
+            <Grid size={12}><Typography variant="overline" sx={{ fontWeight: 900, color: '#666' }}>II. IDENTIFICACIÓN_Y_CONTACTO</Typography></Grid>
 
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField fullWidth label="Cédula" name="cedula" required value={formData.cedula} onChange={handleChange} inputProps={{ maxLength: 10 }} />
-            </Grid>
-            <Grid  size={{ xs: 12, sm: 4 }}>
-              <TextField fullWidth label="Teléfono" name="telefono" required value={formData.telefono} onChange={handleChange} />
+              <TextField fullWidth label="CÉDULA_ID" name="cedula" required value={formData.cedula} onChange={handleChange} slotProps={{ htmlInput: { maxLength: 10 } }} InputProps={{ sx: inputStyles, startAdornment: <BadgeIcon sx={{ mr: 1 }} /> }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField fullWidth label="Edad" name="edad" type="number" required value={formData.edad} onChange={handleChange} />
+              <TextField fullWidth label="TELÉFONO" name="telefono" required value={formData.telefono} onChange={handleChange} InputProps={{ sx: inputStyles }} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField 
+                fullWidth 
+                label="EDAD" 
+                name="edad" 
+                type="number" 
+                required 
+                value={formData.edad === 0 ? "" : formData.edad} // Muestra vacío en lugar de 0 para facilitar escritura
+                onChange={handleChange} 
+                InputProps={{ sx: inputStyles }} 
+              />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField 
-                fullWidth label="Fecha de Nacimiento" name="fechaNacimiento" type="date" required 
+                fullWidth label="FECHA_NACIMIENTO" name="fechaNacimiento" type="date" required 
                 InputLabelProps={{ shrink: true }} 
-                value={formData.fechaNacimiento} onChange={handleChange} 
+                value={formData.fechaNacimiento} onChange={handleChange}
+                InputProps={{ sx: inputStyles }}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth select label="Género" name="genero" required value={formData.genero} onChange={handleChange}>
-                <MenuItem value="MASCULINO">Masculino</MenuItem>
-                <MenuItem value="FEMENINO">Femenino</MenuItem>
-                <MenuItem value="OTRO">Otro</MenuItem>
+              <TextField fullWidth select label="GÉNERO_BIOLÓGICO" name="genero" required value={formData.genero} onChange={handleChange} InputProps={{ sx: inputStyles }}>
+                <MenuItem value="MASCULINO" sx={{ fontWeight: 700 }}>MASCULINO</MenuItem>
+                <MenuItem value="FEMENINO" sx={{ fontWeight: 700 }}>FEMENINO</MenuItem>
+                <MenuItem value="OTRO" sx={{ fontWeight: 700 }}>OTRO</MenuItem>
               </TextField>
             </Grid>
 
             <Grid size={12}>
               <TextField 
-                fullWidth label="Dirección Completa" name="direccion" required multiline rows={2} 
-                value={formData.direccion} onChange={handleChange} 
+                fullWidth label="DIRECCIÓN_DOMICILIARIA" name="direccion" required multiline rows={2} 
+                value={formData.direccion} onChange={handleChange}
+                InputProps={{ sx: inputStyles, startAdornment: <MapIcon sx={{ mr: 1, mt: -2 }} /> }}
               />
             </Grid>
           </Grid>
 
-          <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end", gap: 2 }}>
-            <Button variant="outlined" onClick={onSuccess} sx={{ borderRadius: 2 }}>
-              Cancelar
+          <Stack direction="row" spacing={2} sx={{ mt: 5, justifyContent: "flex-end" }}>
+            <Button variant="outlined" onClick={onSuccess} sx={{ borderRadius: 0, border: '3px solid #000', color: '#000', fontWeight: 900, px: 4 }}>
+              CANCELAR
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-              sx={{ 
-                px: 4, py: 1.5, borderRadius: 2, fontWeight: "bold",
-                background: "linear-gradient(45deg, #3a7afe 30%, #1e40af 90%)"
-              }}
+              sx={{ px: 6, py: 1.5, borderRadius: 0, fontWeight: 900, bgcolor: '#000', color: '#fff', border: '3px solid #000' }}
             >
-              {loading ? "Procesando..." : empleado ? "Guardar Cambios" : "Registrar Empleado"}
+              {loading ? <CircularProgress size={24} color="inherit" /> : empleado ? "GUARDAR_CAMBIOS" : "CONFIRMAR_REGISTRO"}
             </Button>
-          </Box>
+          </Stack>
         </Box>
       </Paper>
     </Box>

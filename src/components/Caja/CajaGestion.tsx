@@ -34,9 +34,41 @@ export default function CajaGestion() {
 
   useEffect(() => { cargarDatos(); }, []);
 
+  // --- LÓGICA DE CONTROL DE INPUT ESTRICTO ---
+  const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Regex: Permite vacío, números y un punto. Bloquea letras y el signo "-"
+    if (val === '' || /^\d*\.?\d*$/.test(val)) {
+      setMontoInput(val);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Bloqueo físico de teclas de dirección y símbolos negativos
+    if (['ArrowUp', 'ArrowDown', '-', 'e', 'E', '+'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const commonInputStyles = {
+    mb: 3,
+    '& .MuiOutlinedInput-root': { 
+      borderRadius: 0, 
+      border: '2px solid #000', 
+      fontWeight: 900 
+    },
+    '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+      display: 'none',
+    },
+    '& input[type=number]': {
+      MozAppearance: 'textfield',
+    },
+  };
+
   const handleAbrir = async () => {
+    // CORRECCIÓN: Permite 0 pero no campos vacíos o negativos
     if (montoInput === '' || Number(montoInput) < 0) {
-      return setError("INGRESE UN MONTO DE APERTURA VÁLIDO.");
+      return setError("INGRESE UN MONTO DE APERTURA VÁLIDO (MÍNIMO 0).");
     }
     try {
       setLoading(true);
@@ -53,8 +85,9 @@ export default function CajaGestion() {
   };
 
   const handleCerrar = async () => {
+    // CORRECCIÓN: Permite 0 para cierres en cero, pero no negativos
     if (montoInput === '' || Number(montoInput) < 0) {
-      return setError("INGRESE EL MONTO FÍSICO CONTADO.");
+      return setError("INGRESE EL MONTO FÍSICO CONTADO (MÍNIMO 0).");
     }
     try {
       setLoading(true);
@@ -82,7 +115,6 @@ export default function CajaGestion() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1000, mx: 'auto' }}>
       
-      {/* HEADER TÉCNICO */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
         <Box>
             <Typography variant="h3" sx={{ fontWeight: 900, color: "#000", letterSpacing: -2 }}>
@@ -111,15 +143,11 @@ export default function CajaGestion() {
         </Alert>
       )}
 
-      {/* --- MODO: RESULTADO DEL CIERRE (ARQUEO) --- */}
       {resumenCierre && !estado && (
         <Paper 
           elevation={0}
           sx={{ 
-            mb: 4, 
-            borderRadius: 0, 
-            p: 3, 
-            border: '4px solid #000',
+            mb: 4, borderRadius: 0, p: 3, border: '4px solid #000',
             bgcolor: resumenCierre.diferencia < 0 ? '#fff' : '#000',
             color: resumenCierre.diferencia < 0 ? '#000' : '#fff'
           }}
@@ -153,7 +181,6 @@ export default function CajaGestion() {
       )}
 
       {!estado ? (
-        /* --- MODO: CAJA CERRADA --- */
         <Paper elevation={0} sx={{ p: 6, textAlign: 'center', borderRadius: 0, border: '4px solid #000', bgcolor: '#fff' }}>
           <LockOpen sx={{ fontSize: 80, color: '#000', mb: 2 }} />
           <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>CAJA CERRADA</Typography>
@@ -165,11 +192,12 @@ export default function CajaGestion() {
             <TextField
               fullWidth
               label="BASE_EFECTIVO_USD"
-              type="number"
+              type="text"
               value={montoInput}
-              onChange={(e) => setMontoInput(e.target.value)}
+              onChange={handleMontoChange}
+              onKeyDown={handleKeyDown}
               placeholder="0.00"
-              sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 0, border: '2px solid #000', fontWeight: 900 } }}
+              sx={commonInputStyles}
               InputProps={{ startAdornment: <Typography sx={{ mr: 1, fontWeight: 900 }}>$</Typography> }}
             />
             <Button 
@@ -185,7 +213,6 @@ export default function CajaGestion() {
           </Box>
         </Paper>
       ) : (
-        /* --- MODO: CAJA ABIERTA --- */
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, sm: 4 }}>
             <Card elevation={0} sx={{ p: 3, borderRadius: 0, border: '2px solid #000', bgcolor: '#fff', textAlign: 'center' }}>
@@ -223,20 +250,18 @@ export default function CajaGestion() {
               <Grid container spacing={4} alignItems="center">
                 <Grid size={{ xs: 12, sm: 7 }}>
                   <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                    <span style={{ backgroundColor: '#000', color: '#fff', padding: '2px 6px' }}>PASO 01:</span> REALICE EL CONTEO FÍSICO DEL EFECTIVO EN GAVETA.
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 1, color: '#666', fontWeight: 600 }}>
-                    EL SISTEMA BLOQUEARÁ EL TERMINAL Y GENERARÁ EL LOG DE DIFERENCIAS AUTOMÁTICAMENTE.
+                    <span style={{ backgroundColor: '#000', color: '#fff', padding: '2px 6px' }}>PASO 01:</span> REALICE EL CONTEO FÍSICO EN GAVETA.
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 5 }}>
                   <TextField
                     fullWidth
                     label="EFECTIVO_FÍSICO_USD"
-                    type="number"
+                    type="text"
                     value={montoInput}
-                    onChange={(e) => setMontoInput(e.target.value)}
-                    sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 0, border: '2px solid #000', fontWeight: 900 } }}
+                    onChange={handleMontoChange}
+                    onKeyDown={handleKeyDown}
+                    sx={commonInputStyles}
                     InputProps={{ startAdornment: <Typography sx={{ mr: 1, fontWeight: 900 }}>$</Typography> }}
                   />
                   <Button 

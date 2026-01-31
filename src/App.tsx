@@ -15,7 +15,7 @@ import ProveedorList from "./components/Proveedor/ProveedorList";
 import ColorList from "./components/Color/ColorList";
 import TallaList from "./components/Talla/TallaList";
 import ProductoList from "./components/Producto/ProductoList";
-import VentaList from "./components/Venta/VentaList";
+
 import HomeAdmin from "./components/layout/HomeAdmin";
 import HomeBodega from "./components/layout/HomeBodega";
 import CategoriaList from "./components/Categoria/CategoriaList";
@@ -26,7 +26,8 @@ import CajaGestion from "./components/Caja/CajaGestion";
 import ClienteList from "./components/Cliente/ClienteList";
 import StockConsulta from "./components/Producto/StockConsulta";
 import ReporteVentasUsuarios from "./components/Venta/ReporteVentasUsuarios";
-import Index from "./pages/index";
+import Index from "./pages/Index";
+import MisVentasCajero from "./components/Venta/VentasporUsuario";
 
 function App() {
   return (
@@ -52,7 +53,7 @@ function App() {
             <Route index element={<HomeVentas/>} />
             <Route path="nueva" element={<NuevaVenta/>} />
             <Route path="caja" element={<CajaGestion/>} />
-            <Route path="lista" element={<VentaList/>} />
+            <Route path="lista" element={<MisVentasCajero/>} />
             <Route path="cliente" element={<ClienteList/>} />
             <Route path="inventario" element={<StockConsulta/>} />
           </Route>

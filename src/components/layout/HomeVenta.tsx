@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { 
-  Box,  Grid, Typography, Button, CircularProgress, Paper, alpha, Stack} from "@mui/material";
+  Box, Grid, Typography, Button, CircularProgress, Paper, alpha, Stack 
+} from "@mui/material";
 import { 
   PointOfSaleRounded as PointOfSaleIcon, 
   AccountBalanceWalletRounded as CashIcon,
@@ -8,7 +9,10 @@ import {
   TrendingUpRounded as TrendingIcon
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { getResumenDashboard, getTopProductosVendedor } from "../../services/ventaService";
+import { getResumenDashboard } from "../../services/ventaService";
+import { getTopProductos } from "../../services/productoService";
+// Importamos las funciones actualizadas
+
 
 export default function HomeVentas() {
   const navigate = useNavigate();
@@ -20,31 +24,29 @@ export default function HomeVentas() {
     const cargarDatos = async () => {
       try {
         setLoading(true);
-        const usuarioStorage = localStorage.getItem('usuario');
-        const userObj = usuarioStorage ? JSON.parse(usuarioStorage) : null;
-        const id_usuario = userObj?.id_usuario;
 
-        if (!id_usuario) {
-          console.error("No se encontró el ID del usuario"); 
-          setLoading(false);
-          return;
-        }
+        // ELIMINAMOS la lógica de extraer el id_usuario del localStorage,
+        // ya que el Token en el header de Axios hace todo el trabajo.
 
         const [resumen, top] = await Promise.all([
-          getResumenDashboard(id_usuario),
-          getTopProductosVendedor(id_usuario, 'dia')
+          getResumenDashboard(), // Ya no recibe parámetros
+          getTopProductos('dia')  // Solo recibe el periodo
         ]);
         
         setDatosResumen(resumen || { totalCaja: 0, conteoVentas: 0 });
         setTopProductos(Array.isArray(top) ? top : []);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error cargando dashboard:", error);
+        // Si el error es 401, podrías redirigir al login
+        if (error.response?.status === 401) {
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
     };
     cargarDatos();
-  }, []);
+  }, [navigate]);
 
   if (loading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -54,7 +56,6 @@ export default function HomeVentas() {
 
   return (
     <Box sx={{ width: "100%", p: { xs: 1, md: 3 } }}>
-      {/* Header Estilo Industrial */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 5 }}>
         <Box sx={{ bgcolor: "#000", p: 1, display: 'flex' }}>
           <TrendingIcon sx={{ color: "#fff" }} />
@@ -65,8 +66,7 @@ export default function HomeVentas() {
       </Stack>
       
       <Grid container spacing={3}>
-        {/* Card de Caja: Negro Absoluto */}
-        <Grid size={{ xs: 12, md: 5 }}>
+        <Grid size={{ xs: 12, sm: 5 }}>
           <Paper 
             elevation={0} 
             sx={{ 
@@ -91,13 +91,12 @@ export default function HomeVentas() {
               ${Number(datosResumen.totalCaja || 0).toFixed(2)}
             </Typography>
             <Typography variant="caption" sx={{ color: alpha("#fff", 0.3), mt: 1, fontWeight: 700 }}>
-                TURNO_ACTUAL_SINCRO
+                TURNO_ACTUAL_SINCRO // VENTAS: {datosResumen.conteoVentas}
             </Typography>
           </Paper>
         </Grid>
 
-        {/* Card de Top Productos: Minimalista Blanco */}
-        <Grid size={{ xs: 12, md: 7 }}>
+        <Grid size={{ xs: 12, sm: 7 }}>
           <Paper 
             elevation={0} 
             sx={{ 
@@ -126,10 +125,10 @@ export default function HomeVentas() {
                         "&:last-child": { borderBottom: 0 }
                     }}>
                     <Typography sx={{ fontWeight: 800, color: "#000", fontSize: '0.85rem' }}>
-                        {String(p.nombre_producto || p.producto).toUpperCase()}
+                        {String(p.producto || "PRODUCTO").toUpperCase()}
                     </Typography>
                     <Typography sx={{ fontWeight: 400, color: "#666", fontFamily: 'monospace' }}>
-                        [{p.total_vendido || p.cantidadVendida} UDS]
+                        [{p.cantidadVendida || 0} UDS]
                     </Typography>
                     </Box>
                 ))
@@ -142,8 +141,7 @@ export default function HomeVentas() {
           </Paper>
         </Grid>
 
-        {/* Botón de Acción Principal: El "Big Black Button" */}
-        <Grid size={{ xs: 12 }}>
+        <Grid size={12}>
           <Button 
             variant="contained" 
             fullWidth 
