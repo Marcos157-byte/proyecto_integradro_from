@@ -28,6 +28,7 @@ import StockConsulta from "./components/Producto/StockConsulta";
 import ReporteVentasUsuarios from "./components/Venta/ReporteVentasUsuarios";
 import Index from "./pages/Index";
 import MisVentasCajero from "./components/Venta/VentasporUsuario";
+import Reportes from "./components/Venta/Reportes";
 
 function App() {
   return (
@@ -71,6 +72,7 @@ function App() {
             <Route path="usuarios" element={<UsuarioList />} />
             <Route path="ventas" element={<ReporteVentasUsuarios />} />
             <Route path="empleados" element={<EmpleadoList/>} />
+             <Route path="reportes" element={<Reportes/>} />
           </Route>
 
           {/* Bodega */}

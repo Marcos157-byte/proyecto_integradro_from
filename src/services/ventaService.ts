@@ -14,7 +14,6 @@ const PATH = "/venta";
 
 // 1. Obtener el resumen del dashboard (Estado de caja y total del día)
 export async function getResumenDashboard(): Promise<ResumenDashboardResponse> {
-  // Nota: No pasamos el id_usuario porque el backend lo extrae del JWT Token
   const { data } = await client.get<SuccessResponse<ResumenDashboardResponse>>(`${PATH}/dashboard/resumen`);
   return data.data; 
 }
@@ -46,19 +45,28 @@ export async function listarMisVentas(page = 1, limit = 10): Promise<PaginatedRe
  * FUNCIONES PARA EL ADMINISTRADOR (REPORTES Y AUDITORÍA)
  */
 
-// 1. Obtener el ranking general de todos los vendedores
+// 1. Obtener el reporte de ventas por rango de fechas (Para el componente Reportes.tsx)
+// Esta función ahora usa 'client' y está lista para ser importada
+export async function getReporteVentas(inicio: string, fin: string): Promise<any[]> {
+  const { data } = await client.get<SuccessResponse<any[]>>(`${PATH}/reporte/rango`, {
+    params: { desde: inicio, hasta: fin }
+  });
+  return data.data;
+}
+
+// 2. Obtener el ranking general de todos los vendedores
 export async function getRankingVendedores(): Promise<any[]> {
   const { data } = await client.get<SuccessResponse<any[]>>(`${PATH}/reporte/ranking`);
   return data.data;
 }
 
-// 2. Obtener las ventas de un usuario específico (Auditoría)
+// 3. Obtener las ventas de un usuario específico (Auditoría)
 export async function getVentasPorUsuario(id_usuario: string): Promise<any[]> {
   const { data } = await client.get<SuccessResponse<any[]>>(`${PATH}/reporte/usuario/${id_usuario}`);
   return data.data;
 }
 
-// 3. Listar todas las ventas del sistema sin excepción
+// 4. Listar todas las ventas del sistema sin excepción
 export async function listarTodasLasVentas(page = 1, limit = 10): Promise<PaginatedResponse<VentaResponse>> {
   const { data } = await client.get<SuccessResponse<PaginatedResponse<VentaResponse>>>(
     `${PATH}`, 
@@ -67,7 +75,7 @@ export async function listarTodasLasVentas(page = 1, limit = 10): Promise<Pagina
   return data.data;
 }
 
-// 4. Eliminar una venta (Acceso restringido)
+// 5. Eliminar una venta (Acceso restringido)
 export async function eliminarVenta(id_venta: string): Promise<void> {
   await client.delete(`${PATH}/${id_venta}`);
 }
