@@ -2,15 +2,13 @@ import { useState, useEffect } from "react";
 import { 
   Box, Paper, Table, TableBody, TableCell, TableContainer, 
   TableHead, TableRow, Typography, Avatar, IconButton, 
-  Tooltip, TextField, InputAdornment, Button, CircularProgress,
-  Grid, Divider, Chip, Card, CardContent, TablePagination, Stack
+  TextField, InputAdornment, Button, CircularProgress,
+  Grid, Divider, Card, CardContent, TablePagination, Stack
 } from "@mui/material";
 import { 
   Search as SearchIcon,
   Visibility as EyeIcon,
   ArrowBack as BackIcon,
-  TrendingUp as TrendingIcon,
-  ShoppingBag as BagIcon,
   Person as PersonIcon,
   Receipt as ReceiptIcon
 } from "@mui/icons-material";

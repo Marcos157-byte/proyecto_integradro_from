@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, TextField, 
-  InputAdornment, Chip, CircularProgress, Container, Stack 
-} from "@mui/material";
+  InputAdornment, Chip, CircularProgress, Container} from "@mui/material";
 import { SearchRounded as SearchIcon, Inventory2Rounded as StockIcon } from "@mui/icons-material";
 import { listProductos } from "../../services/productoService";
 import type { Producto } from "../../types/producto.types";

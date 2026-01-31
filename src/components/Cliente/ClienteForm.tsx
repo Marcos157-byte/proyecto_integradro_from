@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   TextField, Button, Box, Typography, Paper, 
-  Alert, CircularProgress, Grid, Avatar, Divider, Stack 
+  Alert, CircularProgress, Grid, Divider, Stack 
 } from "@mui/material";
 import { PersonAdd as PersonIcon, Save as SaveIcon, Close as CloseIcon } from "@mui/icons-material";
 import { createCliente, updateCliente } from "../../services/clienteService";

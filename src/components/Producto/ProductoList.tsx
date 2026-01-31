@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, TextField, 
-  InputAdornment, Chip, IconButton, CircularProgress,
-  Button, TablePagination 
-} from "@mui/material";
+  InputAdornment, IconButton, CircularProgress,
+  Button, TablePagination} from "@mui/material";
 import { 
   SearchRounded as SearchIcon, 
   AddRounded as AddIcon,
-  EditRounded as EditIcon
+  EditRounded as EditIcon,
+  Inventory2 as InventoryIcon
 } from "@mui/icons-material";
 
 import type { Producto } from "../../types/producto.types";
@@ -50,7 +50,7 @@ export default function ProductoList() {
   const handleSaveProduct = async (nuevo: any) => {
     try {
       await createProducto(nuevo);
-      await cargarProductos(); // Recarga para traer objetos completos
+      await cargarProductos();
       setOpenCrear(false);
     } catch (error) {
       console.error("Error al crear:", error);
@@ -61,8 +61,6 @@ export default function ProductoList() {
     if (selectedProd?.id_producto) {
       try {
         await updateProducto(selectedProd.id_producto, editado);
-        // IMPORTANTE: Recargar desde el servidor asegura que las 
-        // relaciones (nombres) vuelvan a venir como objetos.
         await cargarProductos(); 
         setOpenEditar(false);
       } catch (error) {
@@ -72,81 +70,121 @@ export default function ProductoList() {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box sx={{ p: 4, bgcolor: '#f1f1f1', minHeight: '100vh' }}>
+      {/* HEADER INDUSTRIAL */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 900 }}>Control de <span style={{ color: "#3a7afe" }}>Inventario</span></Typography>
-          <Typography variant="body1" color="text.secondary">Datos reales desde Postgres y MongoDB.</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+            <InventoryIcon sx={{ fontSize: 35 }} />
+            <Typography variant="h3" sx={{ fontWeight: 900, letterSpacing: -2, textTransform: 'uppercase' }}>
+              MASTER_INVENTORY
+            </Typography>
+          </Box>
+          <Typography variant="body2" sx={{ fontWeight: 800, color: '#666', fontFamily: 'monospace' }}>
+            SISTEMA DE GESTIÓN CENTRALIZADO // POSTGRES_DB
+          </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCrear(true)} sx={{ borderRadius: 2 }}>
-          Nuevo Producto
+        <Button 
+          variant="contained" 
+          startIcon={<AddIcon />} 
+          onClick={() => setOpenCrear(true)} 
+          sx={{ 
+            borderRadius: 0, 
+            bgcolor: '#000', 
+            fontWeight: 900,
+            px: 3,
+            py: 1.5,
+            border: '2px solid #000',
+            '&:hover': { bgcolor: '#333' }
+          }}
+        >
+          NUEVO_PRODUCTO
         </Button>
       </Box>
 
-      <Paper sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-        <Box sx={{ p: 3, bgcolor: '#f8fafc' }}>
+      {/* CONTENEDOR DE TABLA ESTILO FICHA */}
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          borderRadius: 0, 
+          border: '4px solid #000', 
+          overflow: 'hidden' 
+        }}
+      >
+        {/* BUSCADOR */}
+        <Box sx={{ p: 3, bgcolor: '#fff', borderBottom: '4px solid #000' }}>
           <TextField 
             fullWidth 
-            placeholder="Buscar por nombre..." 
+            placeholder="FILTRAR_POR_NOMBRE_O_REFERENCIA..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)}
-            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }} 
-            sx={{ bgcolor: 'white' }}
+            InputProps={{ 
+              startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#000' }} /></InputAdornment>,
+              sx: { borderRadius: 0, fontWeight: 800, fontFamily: 'monospace' }
+            }} 
+            variant="outlined"
           />
         </Box>
 
         <TableContainer>
           <Table>
-            <TableHead sx={{ bgcolor: "#f8fafc" }}>
+            <TableHead sx={{ bgcolor: "#000" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Producto</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>Categoría / Talla</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>Stock</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>Estado</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>Acciones</TableCell>
+                <TableCell sx={{ fontWeight: 900, color: '#fff' }}>DESCRIPCIÓN_ITEM</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 900, color: '#fff' }}>CAT / TALLA</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 900, color: '#fff' }}>STOCK_QTY</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 900, color: '#fff' }}>ESTADO_LOG</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 900, color: '#fff' }}>ACCIONES</TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody sx={{ bgcolor: '#fff' }}>
               {loading ? (
-                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 3 }}><CircularProgress /></TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                    <CircularProgress color="inherit" thickness={6} />
+                  </TableCell>
+                </TableRow>
               ) : (
                 productos.map((prod) => (
-                  <TableRow key={prod.id_producto} hover>
+                  <TableRow key={prod.id_producto} hover sx={{ '&:hover': { bgcolor: '#f9f9f9' }, borderBottom: '2px solid #eee' }}>
                     <TableCell>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{prod.nombre}</Typography>
-                      {/* CORRECCIÓN: Asegúrate de que la propiedad sea 'color' y no 'nombre_color' si es objeto */}
-                      <Typography variant="caption" color="text.secondary">
-                        {prod.color?.color || 'Sin color'}
+                      <Typography variant="subtitle2" sx={{ fontWeight: 900, textTransform: 'uppercase' }}>
+                        {prod.nombre}
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#666' }}>
+                        COLOR: {prod.color?.color?.toUpperCase() || 'N/A'}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                        {/* CORRECCIÓN: Acceso seguro al nombre de categoría y talla */}
-                        <Chip 
-                          label={prod.categoria?.nombre || 'N/A'} 
-                          size="small" 
-                          variant="outlined" 
-                        />
-                        <Chip 
-                          label={prod.talla?.nombre || 'N/A'} 
-                          size="small" 
-                          color="primary" 
-                          variant="outlined" 
-                        />
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                        <Box sx={{ px: 1, border: '1px solid #000', fontSize: '0.7rem', fontWeight: 900 }}>
+                          {prod.categoria?.nombre?.toUpperCase() || 'N/A'}
+                        </Box>
+                        <Box sx={{ px: 1, bgcolor: '#000', color: '#fff', fontSize: '0.7rem', fontWeight: 900 }}>
+                          {prod.talla?.nombre || 'N/A'}
+                        </Box>
                       </Box>
                     </TableCell>
                     <TableCell align="center">
-                      <Typography sx={{ fontWeight: 900 }}>{prod.stock_total}</Typography>
+                      <Typography sx={{ fontWeight: 900, fontSize: '1.2rem', fontFamily: 'monospace' }}>
+                        {prod.stock_total.toString().padStart(2, '0')}
+                      </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <StockStatusChip stock={prod.stock_total} stockMinimo={5} />
                     </TableCell>
                     <TableCell align="right">
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                        <IconButton color="info" onClick={() => { setSelectedProd(prod); setOpenEditar(true); }}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
+                      <IconButton 
+                        onClick={() => { setSelectedProd(prod); setOpenEditar(true); }}
+                        sx={{ 
+                          borderRadius: 0, 
+                          border: '2px solid #000', 
+                          color: '#000',
+                          '&:hover': { bgcolor: '#000', color: '#fff' }
+                        }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))
@@ -165,9 +203,11 @@ export default function ProductoList() {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
+          sx={{ bgcolor: '#fff', borderTop: '4px solid #000', fontWeight: 800 }}
         />
       </Paper>
 
+      {/* MODALES */}
       <ModalCrearProducto open={openCrear} onClose={() => setOpenCrear(false)} onSave={handleSaveProduct} />
       {selectedProd && (
         <ModalEditarProducto 

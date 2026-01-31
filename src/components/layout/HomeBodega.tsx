@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { 
-   Grid, Paper, Typography, Box, Alert, Card, CardContent, 
+   Grid, Paper, Typography, Box, Card, CardContent, 
   CircularProgress, Divider, Stack, Button, alpha 
 } from "@mui/material";
 import { 
@@ -60,7 +60,7 @@ export default function BodegaHome() {
             CONTROL_DE_BODEGA
           </Typography>
           <Typography variant="caption" sx={{ color: '#666', fontWeight: 700, letterSpacing: 1 }}>
-            SISTEMA DE GESTIÓN DE ACTIVOS E INVENTARIO // DENIM_LAB
+            SISTEMA DE GESTIÓN DE ACTIVOS E INVENTARIO // DENIM LAB
           </Typography>
         </Box>
         <Button 
@@ -134,7 +134,7 @@ export default function BodegaHome() {
         <Grid size={{ xs: 12 }}>
           <Paper sx={{ p: 4, borderRadius: 0, border: '1px solid #eee', bgcolor: '#fff' }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 3, display: 'flex', alignItems: 'center', gap: 1, letterSpacing: 1 }}>
-              <TrendingIcon fontSize="small" /> LOG_DE_REABASTECIMIENTO_INMEDIATO
+              <TrendingIcon fontSize="small" />  REABASTECIMIENTO INMEDIATO
             </Typography>
             <Divider sx={{ mb: 3, bgcolor: '#000' }} />
             

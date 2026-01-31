@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Container,  Grid, Typography, Box, Alert, Skeleton, Stack, Divider, alpha } from "@mui/material";
+import { Container,  Grid, Typography, Box, Alert, Skeleton, Divider, alpha } from "@mui/material";
 import type { DashboardStats, StockAlerta } from "../../types/dashboardAdmin.types";
 import { getDashboardStats, getStockAlerts } from "../../services/productoService";
 import StatsCards from "../dashboard/StatsCards";
@@ -59,7 +59,7 @@ export default function HomeAdmin() {
             ADMIN_CONTROL_PANEL
           </Typography>
           <Typography variant="caption" sx={{ color: "#666", fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-            Estado Global de Operaciones // DENIM_LAB SYSTEM v2.6
+            Estado Global de Operaciones // DENIM LAB SYSTEM v2.6
           </Typography>
         </Box>
 
@@ -87,7 +87,7 @@ export default function HomeAdmin() {
             <Box sx={{ border: '1px solid #eee', p: 1 }}>
                 <Box sx={{ bgcolor: '#000', p: 1.5, mb: 2 }}>
                     <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 900, letterSpacing: 1 }}>
-                        PRODUCTOS_LÍDERES_VENTA
+                        PRODUCTOS LÍDERES VENTA
                     </Typography>
                 </Box>
                 {loading ? (
@@ -103,7 +103,7 @@ export default function HomeAdmin() {
             <Box sx={{ border: '1px solid #eee', p: 1 }}>
                 <Box sx={{ bgcolor: alerts.length > 0 ? '#ff0000' : '#000', p: 1.5, mb: 2 }}>
                     <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 900, letterSpacing: 1 }}>
-                        NOTIFICACIONES_CRÍTICAS [{alerts.length}]
+                        NOTIFICACIONES CRÍTICAS [{alerts.length}]
                     </Typography>
                 </Box>
                 {loading ? (
@@ -118,7 +118,7 @@ export default function HomeAdmin() {
         {/* FOOTER TÉCNICO */}
         <Box sx={{ mt: 8, pt: 2, borderTop: '1px solid #eee', textAlign: 'right' }}>
             <Typography variant="caption" sx={{ fontFamily: 'monospace', color: '#ccc', fontWeight: 700 }}>
-                SISTEMA_OPERATIVO: DENIM_LAB_OS // ENCRYPTED_CONNECTION: TRUE // USUARIO: ADMIN_ROOT
+                SISTEMA_OPERATIVO: DENIM LAB OS // ENCRYPTED CONNECTION: TRUE // USUARIO: ADMIN ROOT
             </Typography>
         </Box>
 

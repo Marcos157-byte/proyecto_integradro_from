@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { 
   Box, Grid, Paper, Typography, TextField, Button, Table, 
   TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  IconButton, Divider, Autocomplete, Alert, MenuItem, Stack, alpha 
-} from "@mui/material";
+  IconButton, Divider, Autocomplete, Alert, MenuItem, Stack} from "@mui/material";
 import { Delete as DeleteIcon, AddShoppingCart as CartIcon } from "@mui/icons-material";
 import { useReactToPrint } from "react-to-print";
 import { useAuth } from "../../context/AuthContext";

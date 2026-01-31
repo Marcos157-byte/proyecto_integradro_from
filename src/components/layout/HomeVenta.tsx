@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { 
-  Box,  Grid, Typography, Button, CircularProgress, Paper, alpha, Stack, Divider 
-} from "@mui/material";
+  Box,  Grid, Typography, Button, CircularProgress, Paper, alpha, Stack} from "@mui/material";
 import { 
   PointOfSaleRounded as PointOfSaleIcon, 
   AccountBalanceWalletRounded as CashIcon,
@@ -165,7 +164,7 @@ export default function HomeVentas() {
             }}
             startIcon={<PointOfSaleIcon />}
           >
-            INICIAR_NUEVA_VENTA
+            INICIAR NUEVA VENTA
           </Button>
         </Grid>
       </Grid>
