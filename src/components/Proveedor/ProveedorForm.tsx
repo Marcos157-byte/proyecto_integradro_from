@@ -1,6 +1,11 @@
 import React, { useState } from "react";
+import { 
+  Box, TextField, Button, Typography, Paper, 
+  Alert, CircularProgress, Divider 
+} from "@mui/material";
+import Grid from "@mui/material/Grid";
+import { SaveRounded as SaveIcon, Business as BusinessIcon } from "@mui/icons-material";
 import { createProveedor } from "../../services/proveedorService";
-
 
 function ProveedorForm() {
   const [formData, setFormData] = useState({
@@ -16,7 +21,12 @@ function ProveedorForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    // Normalizamos a MAYÚSCULAS para mantener el estilo industrial
+    const formattedValue = (name === "nombre" || name === "contacto" || name === "direccion") 
+      ? value.toUpperCase() 
+      : value;
+
+    setFormData({ ...formData, [name]: formattedValue });
     if (message) setMessage(null);
   };
 
@@ -26,16 +36,13 @@ function ProveedorForm() {
     setMessage(null);
 
     try {
-      if (!formData.nombre.trim()) throw new Error("El nombre es obligatorio");
-      if (!formData.contacto.trim()) throw new Error("El contacto es obligatorio");
-      if (!formData.telefono.trim()) throw new Error("El teléfono es obligatorio");
-      if (!formData.email.trim()) throw new Error("El email es obligatorio");
-      if (!formData.direccion.trim()) throw new Error("La dirección es obligatoria");
+      // Validaciones básicas
+      if (!formData.nombre.trim()) throw new Error("EL NOMBRE ES OBLIGATORIO");
+      if (!formData.email.trim()) throw new Error("EL EMAIL ES OBLIGATORIO");
 
-      const nuevo = await createProveedor(formData);
-      console.log("✅ Proveedor creado:", nuevo);
+      await createProveedor(formData);
 
-      setMessage({ type: "success", text: "Proveedor creado correctamente ✓" });
+      setMessage({ type: "success", text: "REGISTRO COMPLETADO EXITOSAMENTE ✓" });
 
       // Resetear formulario
       setFormData({
@@ -48,69 +55,131 @@ function ProveedorForm() {
 
       setTimeout(() => setMessage(null), 5000);
     } catch (error: any) {
-      let errorMessage = "Error al crear el proveedor";
+      let errorMessage = "ERROR AL PROCESAR EL REGISTRO";
       if (error.response?.status === 403) {
-        errorMessage = "No tienes permisos para crear proveedores";
+        errorMessage = "ACCESO DENEGADO: PERMISOS INSUFICIENTES";
       } else if (error.message) {
         errorMessage = error.message;
       }
       setMessage({ type: "error", text: errorMessage });
-      console.error("❌ Error al crear proveedor", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="proveedor-form">
-      <input
-        type="text"
-        name="nombre"
-        placeholder="Nombre del proveedor"
-        value={formData.nombre}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="contacto"
-        placeholder="Nombre del contacto"
-        value={formData.contacto}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="telefono"
-        placeholder="Teléfono"
-        value={formData.telefono}
-        onChange={handleChange}
-      />
-      <input
-        type="email"
-        name="email"
-        placeholder="Correo electrónico"
-        value={formData.email}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="direccion"
-        placeholder="Dirección"
-        value={formData.direccion}
-        onChange={handleChange}
-      />
+    <Paper 
+      sx={{ 
+        p: 4, 
+        borderRadius: 0, 
+        border: '4px solid #000', 
+        maxWidth: 600, 
+        mx: 'auto', 
+        mt: 4,
+        boxShadow: '10px 10px 0px #000' // Sombra sólida estilo brutalista
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <BusinessIcon sx={{ fontSize: 32 }} />
+        <Typography sx={{ fontWeight: 900, fontSize: '1.5rem', letterSpacing: 1 }}>
+          ALTA_DE_PROVEEDORES
+        </Typography>
+      </Box>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "⏳ Guardando..." : "Guardar proveedor"}
-      </button>
+      <Divider sx={{ mb: 4, borderBottomWidth: 2, borderColor: '#000' }} />
 
       {message && (
-        <p className={`message ${message.type}`}>
+        <Alert 
+          severity={message.type} 
+          sx={{ mb: 3, borderRadius: 0, fontWeight: 800, border: '1px solid' }}
+        >
           {message.text}
-        </p>
+        </Alert>
       )}
-    </form>
+
+      <form onSubmit={handleSubmit}>
+        <Grid container spacing={3}>
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="RAZÓN SOCIAL / NOMBRE"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              InputProps={{ sx: { borderRadius: 0, fontWeight: 800 } }}
+            />
+          </Grid>
+          
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="PERSONA DE CONTACTO"
+              name="contacto"
+              value={formData.contacto}
+              onChange={handleChange}
+              InputProps={{ sx: { borderRadius: 0, fontWeight: 700 } }}
+            />
+          </Grid>
+
+          <Grid size={6}>
+            <TextField
+              fullWidth
+              label="TELÉFONO"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              InputProps={{ sx: { borderRadius: 0, fontFamily: 'monospace', fontWeight: 700 } }}
+            />
+          </Grid>
+
+          <Grid size={6}>
+            <TextField
+              fullWidth
+              label="EMAIL"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              InputProps={{ sx: { borderRadius: 0, fontFamily: 'monospace', fontWeight: 700 } }}
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="DIRECCIÓN"
+              name="direccion"
+              multiline
+              rows={2}
+              value={formData.direccion}
+              onChange={handleChange}
+              InputProps={{ sx: { borderRadius: 0, fontWeight: 700 } }}
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+              sx={{ 
+                borderRadius: 0, 
+                bgcolor: '#000', 
+                py: 1.5, 
+                fontWeight: 900,
+                fontSize: '1rem',
+                '&:hover': { bgcolor: '#333' }
+              }}
+            >
+              {loading ? "PROCESANDO..." : "GUARDAR_PROVEEDOR"}
+            </Button>
+          </Grid>
+        </Grid>
+      </form>
+    </Paper>
   );
 }
 
 export default ProveedorForm;
-

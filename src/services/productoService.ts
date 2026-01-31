@@ -21,7 +21,13 @@ export async function listProductos(page: number = 1, limit: number = 10, search
     limit: res?.limit || 10,
   };
 }
-
+// Agrega esto a tu ventaService.ts
+export async function getTopProductos(periodo: string = 'dia') {
+  const { data } = await client.get<SuccessResponse<any[]>>(`${PATH}/stats/top-productos`, {
+    params: { periodo }
+  });
+  return data.data; // Esto devuelve el array de productos más vendidos
+}
 export async function updateProducto(id: string, dto: any): Promise<Producto> {
   // Aseguramos que los campos numéricos sean realmente números antes de enviarlos
   const payload = {

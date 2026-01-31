@@ -1,40 +1,48 @@
-import type { PaginatedResponse, SuccessResponse } from "./api.types";
+import type { SuccessResponse, PaginatedResponse } from "./api.types";
+import type { Empleado } from "./empleado.type";
 
-
-export interface Rol {
-  id_rol: string;
-  nombre: string; // Ej: 'administrador', 'Ventas'
-  descripcion?: string;
-}
-
-export interface RolUsuario {
-  id_rolUsuario: string;
-  rol: Rol;
-}
-
-export interface Empleado {
-  id_empleado: string;
-  nombre: string;
-  apellido: string;
-  cedula: string;
-  telefono?: string;
-}
-
+/**
+ * Representa la estructura del Usuario (como viene del backend)
+ */
 export interface Usuario {
   id_usuario: string;
+  nombre: string;
   email: string;
-  password?: string;
+  password?: string; // Opcional porque el backend suele ocultarlo en GET
   activo: boolean;
-  empleado: Empleado;
-  rolUsuarios: RolUsuario[];
+  empleado: Empleado; // Incluye el objeto empleado completo
+  rolUsuarios?: RolUsuario[];
 }
 
 /**
- * Tipos de respuesta adaptados a tus genéricos de api.type.ts
+ * Estructura de la relación intermedia con Roles
  */
+export interface RolUsuario {
+  id_rol_usuario: string;
+  rol: {
+    id_rol: string;
+    nombre: string; // Ejemplo: 'administrador'
+  };
+}
 
-// Para obtener un solo usuario (findOne, create, update)
-export type UsuarioSingleResponse = SuccessResponse<Usuario>;
+/**
+ * Datos para CREAR un usuario (lo que enviaste en Postman)
+ */
+export interface CreateUsuarioDto {
+  nombre: string;
+  email: string;
+  password: string;
+  id_empleado: string;   // UUID del empleado asignado
+  rolesIds: string[];    // Array de IDs de roles
+}
 
-// Para el listado paginado de usuarios (findAll)
-export type UsuarioPaginatedResponse = SuccessResponse<PaginatedResponse<Usuario>>;
+/**
+ * Datos para ACTUALIZAR un usuario
+ */
+export type UpdateUsuarioDto = Partial<CreateUsuarioDto> & { activo?: boolean };
+
+/**
+ * Respuestas del Servidor
+ */
+export type UsuarioResponse = SuccessResponse<Usuario>;
+export type UsuariosPaginatedResponse = SuccessResponse<PaginatedResponse<Usuario>>;

@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { 
+  Box, Typography, Paper, TextField, Button, Alert, 
+  Divider, Stack, CircularProgress, Avatar 
+} from "@mui/material";
+import Grid from "@mui/material/Grid";
+import { 
+  SaveRounded as SaveIcon, 
+  DeleteSweepRounded as ClearIcon,
+  HistoryRounded as HistoryIcon,
+  CategoryRounded as CategoryIcon,
+  VisibilityRounded as ViewIcon
+} from "@mui/icons-material";
 import { createCategoria } from "../../services/categoriaService";
-
 
 function CategoriaForm() {
   const [formData, setFormData] = useState({ nombre: "", descripcion: "" });
@@ -8,15 +19,11 @@ function CategoriaForm() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [recentCategorias, setRecentCategorias] = useState<{ nombre: string; descripcion: string }[]>([]);
 
-  // Cargar categorías recientes del localStorage al inicio
   useEffect(() => {
-    const savedCategorias = localStorage.getItem("recentCategorias");
-    if (savedCategorias) {
-      setRecentCategorias(JSON.parse(savedCategorias));
-    }
+    const saved = localStorage.getItem("recentCategorias");
+    if (saved) setRecentCategorias(JSON.parse(saved));
   }, []);
 
-  // Guardar categorías recientes en localStorage
   useEffect(() => {
     if (recentCategorias.length > 0) {
       localStorage.setItem("recentCategorias", JSON.stringify(recentCategorias));
@@ -25,225 +32,146 @@ function CategoriaForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const finalValue = name === "nombre" ? value.toUpperCase() : value;
+    setFormData((prev) => ({ ...prev, [name]: finalValue }));
     if (message) setMessage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.nombre.trim() || !formData.descripcion.trim()) {
-      setMessage({ type: "error", text: "Por favor, completa todos los campos" });
-      return;
-    }
-
-    // Validación local: nombre solo letras y máximo 100 caracteres
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/.test(formData.nombre)) {
-      setMessage({ type: "error", text: "⛔ El nombre solo puede contener letras y espacios" });
-      return;
-    }
-    if (formData.nombre.length > 100) {
-      setMessage({ type: "error", text: "⛔ El nombre no puede tener más de 100 caracteres" });
-      return;
-    }
-    if (formData.descripcion.length > 255) {
-      setMessage({ type: "error", text: "⛔ La descripción no puede tener más de 255 caracteres" });
+    if (!/^[A-ZÁÉÍÓÚÑ\s]+$/i.test(formData.nombre)) {
+      setMessage({ type: "error", text: "ERROR_SINTAXIS: EL NOMBRE SOLO PERMITE LETRAS" });
       return;
     }
 
     setLoading(true);
-    setMessage(null);
-
     try {
-      const nueva = await createCategoria({
-        nombre: formData.nombre,
-        descripcion: formData.descripcion,
+      await createCategoria({
+        nombre: formData.nombre.trim(),
+        descripcion: formData.descripcion.trim(),
       });
-      console.log("✅ Categoría creada:", nueva);
 
-      // Agregar a categorías recientes (sin duplicados)
       setRecentCategorias((prev) => {
-        const filtered = prev.filter((c) => c.nombre !== formData.nombre);
-        return [{ nombre: formData.nombre, descripcion: formData.descripcion }, ...filtered.slice(0, 4)];
+        const filtered = prev.filter((c) => c.nombre !== formData.nombre.toUpperCase());
+        return [{ nombre: formData.nombre.toUpperCase(), descripcion: formData.descripcion }, ...filtered.slice(0, 4)];
       });
 
-      setMessage({
-        type: "success",
-        text: `🎉 Categoría "${formData.nombre}" creada correctamente`,
-      });
-
+      setMessage({ type: "success", text: "REGISTRO_COMPLETADO_CON_ÉXITO" });
       setFormData({ nombre: "", descripcion: "" });
-
-      // Limpiar mensaje después de 5 segundos
-      setTimeout(() => setMessage(null), 5000);
     } catch (error: any) {
-      const errorMsg =
-        error.response?.status === 403
-          ? "⛔ No tienes permisos para crear categorías"
-          : error.response?.status === 409
-          ? "⚠️ Esta categoría ya existe en el sistema"
-          : `❌ Error: ${error.message || "Error al crear la categoría"}`;
-
-      setMessage({ type: "error", text: errorMsg });
-      console.error("❌ Error al crear una Categoría", error);
+      setMessage({ type: "error", text: "ERROR_SISTEMA: FALLO EN LA CREACIÓN" });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClear = () => {
-    setFormData({ nombre: "", descripcion: "" });
-    setMessage(null);
-  };
-
-  const handleChipClick = (categoria: { nombre: string; descripcion: string }) => {
-    setFormData({ nombre: categoria.nombre, descripcion: categoria.descripcion });
-  };
-
-  // Obtener inicial del nombre para el badge
-  const getInitial = (name: string) => {
-    return name.charAt(0).toUpperCase();
-  };
-
-  // Formatear descripción para vista previa
-  const formatDescription = (desc: string) => {
-    if (desc.length > 100) {
-      return desc.substring(0, 100) + "...";
-    }
-    return desc;
-  };
-
   return (
-    <div className="categoria-form-container">
-      {/* Header */}
-      <div className="form-header">
-        <span className="form-icon">📂</span>
-        <h1 className="form-title">Nueva Categoría</h1>
-        <p className="form-subtitle">Agrega una nueva categoría al catálogo del sistema</p>
-      </div>
+    <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+      <Paper sx={{ p: 4, borderRadius: 0, border: '4px solid #000', maxWidth: 800, width: '100%', boxShadow: '12px 12px 0px #000' }}>
+        
+        {/* HEADER */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <CategoryIcon sx={{ fontSize: 40 }} />
+          <Box>
+            <Typography sx={{ fontWeight: 900, fontSize: '1.8rem', lineHeight: 1 }}>NUEVA_CATEGORÍA</Typography>
+            <Typography sx={{ fontWeight: 700, fontFamily: 'monospace', color: 'text.secondary' }}>CATALOG_MANAGER // v2.0</Typography>
+          </Box>
+        </Box>
 
-      {/* Mensajes */}
-      {message && (
-        <div className={`form-message message-${message.type}`}>
-          <span className="message-icon">{message.type === "success" ? "✅" : "⚠️"}</span>
-          {message.text}
-        </div>
-      )}
+        <Divider sx={{ mb: 4, borderBottomWidth: 2, borderColor: '#000' }} />
 
-      <form onSubmit={handleSubmit}>
-        {/* Campo Nombre */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="nombre">
-            Nombre de la Categoría
-          </label>
-          <input
-            id="nombre"
-            name="nombre"
-            type="text"
-            value={formData.nombre}
-            onChange={handleChange}
-            placeholder="Ej: Ropa, Calzado, Accesorios..."
-            className="form-input"
-            disabled={loading}
-            required
-            maxLength={100}
-            autoComplete="off"
-          />
-          <div className="size-indicator">
-            <span className="current-size">{formData.nombre.length}/100 caracteres</span>
-            <span className="size-limit">Solo letras y espacios</span>
-          </div>
-        </div>
-
-        {/* Campo Descripción */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="descripcion">
-            Descripción
-          </label>
-          <textarea
-            id="descripcion"
-            name="descripcion"
-            value={formData.descripcion}
-            onChange={handleChange}
-            placeholder="Describe la categoría (máximo 255 caracteres)..."
-            className="form-input"
-            disabled={loading}
-            required
-            maxLength={255}
-            rows={3}
-          />
-          <div className="size-indicator">
-            <span className="current-size">{formData.descripcion.length}/255 caracteres</span>
-            <span className="size-limit">Descripción clara y concisa</span>
-          </div>
-        </div>
-
-        {/* Vista previa de la categoría */}
-        {(formData.nombre || formData.descripcion) && (
-          <div className="categoria-preview-container">
-            <div className="preview-label">Vista previa</div>
-            <div className="categoria-display">
-              <div className="categoria-badge">
-                {getInitial(formData.nombre) || "C"}
-              </div>
-              <div className="categoria-info">
-                <div className="categoria-nombre">
-                  {formData.nombre || "Nombre de categoría"}
-                </div>
-                <p className="categoria-descripcion">
-                  {formData.descripcion ? formatDescription(formData.descripcion) : "Descripción de la categoría..."}
-                </p>
-              </div>
-            </div>
-          </div>
+        {message && (
+          <Alert severity={message.type} variant="filled" sx={{ mb: 3, borderRadius: 0, fontWeight: 800, border: '2px solid #000' }}>
+            {message.text}
+          </Alert>
         )}
 
-        {/* Botones */}
-        <div className="form-buttons">
-          <button
-            type="button"
-            className="btn btn-clear"
-            onClick={handleClear}
-            disabled={loading || (!formData.nombre && !formData.descripcion)}
-          >
-            <span className="btn-icon">🗑️</span>
-            Limpiar
-          </button>
+        <Grid container spacing={4}>
+          <Grid size={{ xs: 12, md: 7 }}>
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={3}>
+                <TextField
+                  fullWidth label="NOMBRE_CATEGORÍA"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  slotProps={{ input: { sx: { borderRadius: 0, fontWeight: 900 } } }}
+                  helperText={`${formData.nombre.length}/100 CARACTERES`}
+                />
+                <TextField
+                  fullWidth label="DESCRIPCIÓN_TÉCNICA"
+                  name="descripcion"
+                  multiline rows={3}
+                  value={formData.descripcion}
+                  onChange={handleChange}
+                  slotProps={{ input: { sx: { borderRadius: 0, fontWeight: 600 } } }}
+                  helperText={`${formData.descripcion.length}/255 CARACTERES`}
+                />
+                <Stack direction="row" spacing={2}>
+                  <Button fullWidth variant="outlined" startIcon={<ClearIcon />} onClick={() => setFormData({ nombre: "", descripcion: "" })} sx={{ borderRadius: 0, border: '2px solid #000', color: '#000', fontWeight: 900 }}>
+                    BORRAR
+                  </Button>
+                  <Button fullWidth variant="contained" type="submit" disabled={loading} startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />} sx={{ borderRadius: 0, bgcolor: '#000', fontWeight: 900 }}>
+                    REGISTRAR
+                  </Button>
+                </Stack>
+              </Stack>
+            </form>
+          </Grid>
 
-          <button
-            type="submit"
-            className="btn btn-submit"
-            disabled={loading || !formData.nombre.trim() || !formData.descripcion.trim()}
-          >
-            <span className="btn-icon">{loading ? "⏳" : "➕"}</span>
-            {loading ? "Creando..." : "Registrar Categoría"}
-          </button>
-        </div>
-      </form>
-
-      {/* Categorías recientes */}
-      {recentCategorias.length > 0 && (
-        <div className="recent-categorias">
-          <h3 className="recent-title">Categorías recientes</h3>
-          <p style={{ fontSize: "14px", color: "#7f8c8d", marginBottom: "15px" }}>
-            Haz clic para reutilizar
-          </p>
-          <div className="recent-categorias-grid">
-            {recentCategorias.map((categoria, index) => (
-              <div
-                key={index}
-                className="categoria-chip"
-                onClick={() => handleChipClick(categoria)}
-                title={`Usar categoría: ${categoria.nombre}\n${categoria.descripcion}`}
-              >
-                <div className="chip-nombre">{categoria.nombre}</div>
-                <div className="chip-descripcion">{formatDescription(categoria.descripcion)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+          {/* VISTA PREVIA INDUSTRIAL */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Box sx={{ border: '2px dashed #ccc', p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Typography sx={{ fontWeight: 900, fontSize: '0.7rem', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ViewIcon fontSize="small" /> VISTA_PREVIA_DE_ETIQUETA
+              </Typography>
+              
+              <Box sx={{ 
+                bgcolor: '#000', color: '#fff', p: 2, 
+                display: 'flex', alignItems: 'center', gap: 2,
+                opacity: formData.nombre ? 1 : 0.3,
+                transition: '0.3s'
+              }}>
+                <Avatar sx={{ bgcolor: '#3a7afe', borderRadius: 0, fontWeight: 900, width: 50, height: 50, border: '2px solid #fff' }}>
+                  {formData.nombre.charAt(0) || "?"}
+                </Avatar>
+                <Box sx={{ overflow: 'hidden' }}>
+                  <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {formData.nombre || "SIN_NOMBRE"}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.7rem', fontFamily: 'monospace', color: '#aaa', lineHeight: 1.2 }}>
+                    {formData.descripcion || "ESPERANDO_DESCRIPCIÓN..."}
+                  </Typography>
+                </Box>
+              </Box>
+              
+              {/* RECIENTES */}
+              {recentCategorias.length > 0 && (
+                <Box sx={{ mt: 'auto', pt: 3 }}>
+                  <Typography sx={{ fontWeight: 900, fontSize: '0.7rem', mb: 1 }}>REGISTROS_RECIENTES:</Typography>
+                  <Stack spacing={1}>
+                    {recentCategorias.map((cat, i) => (
+                      <Box 
+                        key={i} 
+                        onClick={() => setFormData(cat)}
+                        sx={{ 
+                          p: 1, border: '1px solid #000', cursor: 'pointer',
+                          '&:hover': { bgcolor: '#f0f0f0', transform: 'translateX(5px)' },
+                          transition: '0.2s', display: 'flex', justifyContent: 'space-between'
+                        }}
+                      >
+                        <Typography sx={{ fontWeight: 800, fontSize: '0.8rem' }}>{cat.nombre}</Typography>
+                        <HistoryIcon sx={{ fontSize: 16 }} />
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
   );
 }
 

@@ -1,21 +1,22 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { 
   Box, Grid, Typography, Button, CircularProgress, Paper, alpha, Stack 
 } from "@mui/material";
-// ✅ IMPORTACIONES CORREGIDAS: Soluciona "Uncaught ReferenceError: CashIcon is not defined"
 import { 
   PointOfSaleRounded as PointOfSaleIcon, 
   AccountBalanceWalletRounded as CashIcon,
-  StarRounded as StarIcon
+  StarRounded as StarIcon,
+  TrendingUpRounded as TrendingIcon
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-// ✅ SERVICIOS: Sincronizados con las rutas del Backend para evitar el Error 404
-import { getResumenDashboard, getTopProductosVendedor } from "../../services/ventaService";
+import { getResumenDashboard } from "../../services/ventaService";
+import { getTopProductos } from "../../services/productoService";
+// Importamos las funciones actualizadas
+
 
 export default function HomeVentas() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  // Inicialización de estados segura
   const [datosResumen, setDatosResumen] = useState({ totalCaja: 0, conteoVentas: 0 });
   const [topProductos, setTopProductos] = useState<any[]>([]);
 
@@ -23,101 +24,141 @@ export default function HomeVentas() {
     const cargarDatos = async () => {
       try {
         setLoading(true);
-        
-        // 1. ✅ EXTRACCIÓN DE ID: Recupera el objeto completo guardado en el AuthContext
-        const usuarioStorage = localStorage.getItem('usuario');
-        const userObj = usuarioStorage ? JSON.parse(usuarioStorage) : null;
-        
-        // 2. ✅ VALIDACIÓN CLAVE: Buscamos 'id_usuario' que es el nombre en tu BD
-        const id_usuario = userObj?.id_usuario;
 
-        if (!id_usuario) {
-          // Si ves este error, es porque el login no guardó correctamente al 'usuario'
-          console.error("No se encontró el ID del usuario en storage"); 
-          setLoading(false);
-          return;
-        }
+        // ELIMINAMOS la lógica de extraer el id_usuario del localStorage,
+        // ya que el Token en el header de Axios hace todo el trabajo.
 
-        // 3. ✅ LLAMADAS SINCRONIZADAS: Pasa el ID real al backend
         const [resumen, top] = await Promise.all([
-          getResumenDashboard(id_usuario),
-          getTopProductosVendedor(id_usuario, 'dia')
+          getResumenDashboard(), // Ya no recibe parámetros
+          getTopProductos('dia')  // Solo recibe el periodo
         ]);
         
-        // Seteo de datos corregido para actualizar el "$0.00"
         setDatosResumen(resumen || { totalCaja: 0, conteoVentas: 0 });
         setTopProductos(Array.isArray(top) ? top : []);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error cargando dashboard:", error);
+        // Si el error es 401, podrías redirigir al login
+        if (error.response?.status === 401) {
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
     };
     cargarDatos();
-  }, []);
+  }, [navigate]);
 
   if (loading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-      <CircularProgress />
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+      <CircularProgress sx={{ color: '#000' }} />
     </Box>
   );
 
   return (
-    <Box sx={{ width: "100%", p: 1 }}>
-      <Typography variant="h4" sx={{ fontWeight: 800, color: "#2B3674", mb: 4 }}>
-        Mi Resumen de Turno
-      </Typography>
+    <Box sx={{ width: "100%", p: { xs: 1, md: 3 } }}>
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 5 }}>
+        <Box sx={{ bgcolor: "#000", p: 1, display: 'flex' }}>
+          <TrendingIcon sx={{ color: "#fff" }} />
+        </Box>
+        <Typography variant="h4" sx={{ fontWeight: 900, color: "#000", letterSpacing: -1 }}>
+          RESUMEN_DE_TURNO
+        </Typography>
+      </Stack>
       
       <Grid container spacing={3}>
-        {/* Card de Caja: Ahora muestra el total real del vendedor logueado */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Paper elevation={0} sx={{ p: 3, borderRadius: "20px", border: "1px solid #E0E5F2", display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ bgcolor: alpha("#05CD99", 0.1), p: 2, borderRadius: "15px" }}>
-              <CashIcon sx={{ color: "#05CD99", fontSize: 30 }} />
-            </Box>
-            <Box>
-              <Typography sx={{ color: "#A3AED0", fontSize: "0.85rem", fontWeight: 700 }}>TU CAJA HOY</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#2B3674" }}>
-                ${Number(datosResumen.totalCaja || 0).toFixed(2)}
-              </Typography>
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* Card de Top Productos: Muestra el nombre y cantidad del backend */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Paper elevation={0} sx={{ p: 3, borderRadius: "20px", border: "1px solid #E0E5F2" }}>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-              <StarIcon sx={{ color: "#FFB800" }} />
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#2B3674" }}>Mis Más Vendidos</Typography>
+        <Grid size={{ xs: 12, sm: 5 }}>
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 4, 
+              borderRadius: 0, 
+              bgcolor: "#000", 
+              color: "#fff",
+              border: "1px solid #000",
+              display: "flex", 
+              flexDirection: "column",
+              justifyContent: "center",
+              height: "100%"
+            }}
+          >
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                <CashIcon sx={{ color: alpha("#fff", 0.5), fontSize: 20 }} />
+                <Typography sx={{ color: alpha("#fff", 0.5), fontSize: "0.7rem", fontWeight: 900, letterSpacing: 2 }}>
+                    EFECTIVO_EN_CAJA
+                </Typography>
             </Stack>
-            {topProductos.length > 0 ? (
-              topProductos.map((p, i) => (
-                <Box key={i} sx={{ display: "flex", justifyContent: "space-between", py: 1, borderBottom: "1px solid #F4F7FE" }}>
-                  <Typography sx={{ fontWeight: 600, color: "#2B3674" }}>
-                    {p.nombre_producto || p.producto}
-                  </Typography>
-                  <Typography sx={{ fontWeight: 800, color: "#4318FF" }}>
-                    {p.total_vendido || p.cantidadVendida} uds
-                  </Typography>
-                </Box>
-              ))
-            ) : (
-              <Typography variant="body2" color="textSecondary">Aún no has realizado ventas hoy.</Typography>
-            )}
+            <Typography variant="h2" sx={{ fontWeight: 900, letterSpacing: -2 }}>
+              ${Number(datosResumen.totalCaja || 0).toFixed(2)}
+            </Typography>
+            <Typography variant="caption" sx={{ color: alpha("#fff", 0.3), mt: 1, fontWeight: 700 }}>
+                TURNO_ACTUAL_SINCRO // VENTAS: {datosResumen.conteoVentas}
+            </Typography>
           </Paper>
         </Grid>
 
-        <Grid size={{ xs: 12 }}>
+        <Grid size={{ xs: 12, sm: 7 }}>
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 4, 
+              borderRadius: 0, 
+              border: "1px solid #e0e0e0", 
+              bgcolor: "#fff",
+              height: "100%"
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
+              <StarIcon sx={{ color: "#000", fontSize: 18 }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 900, color: "#000", letterSpacing: 1 }}>
+                MÁS_VENDIDOS_HOY
+              </Typography>
+            </Stack>
+            
+            <Stack spacing={0.5}>
+                {topProductos.length > 0 ? (
+                topProductos.map((p, i) => (
+                    <Box key={i} sx={{ 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        py: 2, 
+                        borderBottom: "1px solid #f0f0f0",
+                        "&:last-child": { borderBottom: 0 }
+                    }}>
+                    <Typography sx={{ fontWeight: 800, color: "#000", fontSize: '0.85rem' }}>
+                        {String(p.producto || "PRODUCTO").toUpperCase()}
+                    </Typography>
+                    <Typography sx={{ fontWeight: 400, color: "#666", fontFamily: 'monospace' }}>
+                        [{p.cantidadVendida || 0} UDS]
+                    </Typography>
+                    </Box>
+                ))
+                ) : (
+                <Typography variant="body2" sx={{ color: "#999", fontStyle: 'italic' }}>
+                    Sin registros de venta en el periodo actual.
+                </Typography>
+                )}
+            </Stack>
+          </Paper>
+        </Grid>
+
+        <Grid size={12}>
           <Button 
             variant="contained" 
             fullWidth 
             onClick={() => navigate("/ventas/nueva")}
             sx={{ 
-              py: 3, borderRadius: "20px", fontWeight: 900, fontSize: "1.2rem",
-              background: "linear-gradient(135deg, #4318FF 0%, #5E37FF 100%)",
-              textTransform: "none",
-              boxShadow: "0px 10px 20px rgba(67, 24, 255, 0.2)"
+              py: 4, 
+              borderRadius: 0, 
+              fontWeight: 900, 
+              fontSize: "1.1rem",
+              bgcolor: "#000",
+              color: "#fff",
+              letterSpacing: 3,
+              border: "2px solid #000",
+              "&:hover": {
+                bgcolor: "#fff",
+                color: "#000",
+              }
             }}
             startIcon={<PointOfSaleIcon />}
           >

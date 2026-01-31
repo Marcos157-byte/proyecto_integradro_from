@@ -4,19 +4,18 @@ import {
   TableContainer, TableHead, TableRow, TextField, 
   InputAdornment, IconButton, CircularProgress,
   Button, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions,
-  Alert
+  Alert, Stack, Divider
 } from "@mui/material";
 import { 
   SearchRounded as SearchIcon, 
   AddRounded as AddIcon,
-  EditRounded as EditIcon,
-  DeleteRounded as DeleteIcon
+  EditNote as EditIcon,
+  DeleteForever as DeleteIcon,
+  StraightenRounded as RulerIcon,
+  DeveloperMode as CodeIcon
 } from "@mui/icons-material";
 import type { Talla } from "../../types/talla.types";
 import { createTalla, deleteTalla, getTallas, updateTalla } from "../../services/tallaService";
-
-// Importamos las funciones del service
-
 
 export default function TallaList() {
   const [tallas, setTallas] = useState<Talla[]>([]);
@@ -38,7 +37,6 @@ export default function TallaList() {
     setLoading(true);
     try {
       const response = await getTallas(page + 1, rowsPerPage, search);
-      // Usamos .docs porque viene de PaginatedResponseMongo
       setTallas(response.data.docs);
       setTotalDocs(response.data.totalDocs);
     } catch (error) {
@@ -60,9 +58,8 @@ export default function TallaList() {
   };
 
   const handleSave = async () => {
-    // Validación: Solo letras (como en tu Schema de NestJS)
     if (!/^[A-Za-z]+$/.test(nombreForm)) {
-      setErrorValidacion("La talla solo puede contener letras (Ej: XL, M, S)");
+      setErrorValidacion("ERROR_FORMATO: SE REQUIEREN CARACTERES ALFABÉTICOS (EJ: XL, M, S)");
       return;
     }
 
@@ -80,61 +77,92 @@ export default function TallaList() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("¿Estás seguro de eliminar esta talla?")) {
+    if (window.confirm("¿CONFIRMAR ELIMINACIÓN DE REGISTRO TÉCNICO?")) {
       await deleteTalla(id);
       cargarTallas();
     }
   };
 
   return (
-    <Box sx={{ p: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box sx={{ p: 4, bgcolor: '#fafafa', minHeight: '100vh' }}>
+      {/* HEADER INDUSTRIAL */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '4px solid #000', pb: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 900 }}>Gestión de <span style={{ color: "#3a7afe" }}>Tallas</span></Typography>
-          <Typography variant="body1" color="text.secondary">Configuración de dimensiones en MongoDB.</Typography>
+          <Typography sx={{ fontWeight: 900, fontSize: '2.5rem', lineHeight: 1, letterSpacing: -2 }}>
+            SISTEMA_DE_<span style={{ color: "#3a7afe" }}>TALLAS</span>
+          </Typography>
+          <Typography sx={{ fontWeight: 700, mt: 1, fontFamily: 'monospace', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CodeIcon fontSize="small" /> MONGODB_COLLECTION // DIMENSION_UNIT
+          </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()} sx={{ borderRadius: 2 }}>
-          Nueva Talla
+        <Button 
+          variant="contained" 
+          startIcon={<AddIcon />} 
+          onClick={() => handleOpenModal()} 
+          sx={{ borderRadius: 0, bgcolor: '#000', px: 4, py: 1.5, fontWeight: 900, '&:hover': { bgcolor: '#333' } }}
+        >
+          NUEVA_DIMENSIÓN
         </Button>
       </Box>
 
-      <Paper sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-        {/* Search Bar */}
-        <Box sx={{ p: 3, bgcolor: '#f8fafc' }}>
+      <Paper sx={{ borderRadius: 0, border: '4px solid #000', boxShadow: 'none', overflow: 'hidden' }}>
+        {/* BARRA DE BÚSQUEDA TÉCNICA */}
+        <Box sx={{ p: 2, bgcolor: '#000' }}>
           <TextField 
-            fullWidth placeholder="Buscar talla (ej: XL)..." value={search} onChange={(e) => setSearch(e.target.value)}
-            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }} 
-            sx={{ bgcolor: 'white' }}
+            fullWidth 
+            placeholder="BUSCAR_TALLA_POR_CÓDIGO..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)}
+            InputProps={{ 
+                startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#fff' }} /></InputAdornment>,
+                sx: { color: '#fff', fontWeight: 700, fontFamily: 'monospace', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#444' } }
+            }} 
           />
         </Box>
 
         <TableContainer>
           <Table>
-            <TableHead sx={{ bgcolor: "#f8fafc" }}>
+            <TableHead sx={{ bgcolor: "#f8fafc", borderBottom: '2px solid #000' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Talla</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>UUID Identificador</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>Acciones</TableCell>
+                <TableCell sx={{ fontWeight: 900, fontSize: '0.75rem' }}>VALOR_NOMINAL</TableCell>
+                <TableCell sx={{ fontWeight: 900, fontSize: '0.75rem' }}>IDENTIFICADOR_SISTEMA (UUID)</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 900, fontSize: '0.75rem' }}>ACCIONES</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 3 }}><CircularProgress /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 8 }}><CircularProgress color="inherit" thickness={5} /></TableCell></TableRow>
               ) : tallas.length === 0 ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 3 }}>No hay tallas registradas.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 8, fontWeight: 800 }}>SIN_DATOS_REGISTRADOS</TableCell></TableRow>
               ) : (
                 tallas.map((t) => (
-                  <TableRow key={t.id_talla} hover>
+                  <TableRow key={t.id_talla} hover sx={{ '&:hover': { bgcolor: '#f1f5f9' } }}>
                     <TableCell>
-                      <Typography sx={{ fontWeight: 700, color: "#3a7afe", fontSize: '1.1rem' }}>{t.nombre}</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ bgcolor: '#000', color: '#fff', px: 2, py: 0.5, fontWeight: 900, fontSize: '1.2rem' }}>
+                          {t.nombre}
+                        </Box>
+                        <RulerIcon sx={{ color: '#ccc' }} />
+                      </Box>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="caption" color="text.secondary">{t.id_talla}</Typography>
+                      <Typography sx={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'text.secondary', fontWeight: 600 }}>
+                        {t.id_talla}
+                      </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <IconButton color="info" onClick={() => handleOpenModal(t)}><EditIcon fontSize="small" /></IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(t.id_talla)}><DeleteIcon fontSize="small" /></IconButton>
+                      <IconButton 
+                        sx={{ border: '2px solid #000', borderRadius: 0, mr: 1, '&:hover': { bgcolor: '#000', color: '#fff' } }} 
+                        onClick={() => handleOpenModal(t)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton 
+                        sx={{ border: '2px solid #000', borderRadius: 0, '&:hover': { bgcolor: '#ef4444', color: '#fff', borderColor: '#ef4444' } }} 
+                        onClick={() => handleDelete(t.id_talla)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))
@@ -150,29 +178,53 @@ export default function TallaList() {
           onPageChange={(_, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+          sx={{ borderTop: '2px solid #000', bgcolor: '#f8fafc', fontWeight: 900 }}
         />
       </Paper>
 
-      {/* Modal para Crear/Editar */}
-      <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="xs">
-        <DialogTitle sx={{ fontWeight: 800 }}>{selectedTalla ? "Editar Talla" : "Registrar Talla"}</DialogTitle>
-        <DialogContent dividers>
-          {errorValidacion && <Alert severity="error" sx={{ mb: 2 }}>{errorValidacion}</Alert>}
-          <TextField 
-            fullWidth label="Nombre de la Talla" 
-            placeholder="Ej: XL" 
-            sx={{ mt: 1 }} 
-            value={nombreForm}
-            onChange={(e) => {
-                setNombreForm(e.target.value.toUpperCase());
-                setErrorValidacion("");
-            }}
-            helperText="Solo se permiten letras"
-          />
+      {/* MODAL TALLA INDUSTRIAL */}
+      <Dialog 
+        open={openModal} 
+        onClose={() => setOpenModal(false)} 
+        fullWidth 
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 0, border: '4px solid #000' } }}
+      >
+        <DialogTitle sx={{ bgcolor: '#000', color: '#fff', fontWeight: 900, letterSpacing: 1 }}>
+          {selectedTalla ? "EDITAR_REGISTRO" : "NUEVO_REGISTRO"}
+        </DialogTitle>
+        <DialogContent sx={{ p: 4 }}>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            {errorValidacion && <Alert severity="error" variant="filled" sx={{ borderRadius: 0, fontWeight: 700 }}>{errorValidacion}</Alert>}
+            
+            <TextField 
+              fullWidth 
+              label="NOMBRE_DE_LA_TALLA" 
+              placeholder="EJ: XXL" 
+              value={nombreForm}
+              onChange={(e) => {
+                  setNombreForm(e.target.value.toUpperCase());
+                  setErrorValidacion("");
+              }}
+              helperText="ADMITA SOLO CARACTERES ALFABÉTICOS"
+              slotProps={{ 
+                input: { sx: { borderRadius: 0, fontWeight: 900, fontSize: '1.5rem', textAlign: 'center' } },
+                formHelperText: { sx: { fontWeight: 700, fontFamily: 'monospace' } }
+              }}
+            />
+          </Stack>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setOpenModal(false)} color="inherit">Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={!nombreForm}>Guardar</Button>
+        <Divider sx={{ borderBottomWidth: 2, borderColor: '#000' }} />
+        <DialogActions sx={{ p: 3, bgcolor: '#f8fafc' }}>
+          <Button onClick={() => setOpenModal(false)} sx={{ fontWeight: 900, color: '#000' }}>CANCELAR</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleSave} 
+            disabled={!nombreForm}
+            sx={{ borderRadius: 0, bgcolor: '#000', fontWeight: 900, px: 4, '&:hover': { bgcolor: '#333' } }}
+          >
+            CONFIRMAR_DATOS
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

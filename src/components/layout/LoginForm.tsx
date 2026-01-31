@@ -7,17 +7,31 @@ import {
   Typography, 
   Container, 
   Paper, 
-  Avatar, 
   Alert, 
   InputAdornment, 
-  IconButton 
+  IconButton,
+  Stack
 } from "@mui/material";
 import { 
   LockOutlined as LockIcon, 
   EmailOutlined as EmailIcon, 
   Visibility, 
-  VisibilityOff} from "@mui/icons-material";
+  VisibilityOff,
+  ArrowBackIosNew
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
+// --- FIX PARA EL FONDO GRIS DEL AUTOCOMPLETADO ---
+const autofillFix = {
+  "& input:-webkit-autofill": {
+    WebkitBoxShadow: "0 0 0 100px #fff inset !important", // Obliga a que sea blanco
+    WebkitTextFillColor: "#000 !important", // Obliga a que el texto sea negro
+    transition: "background-color 5000s ease-in-out 0s",
+  },
+};
+
+const MotionPaper = motion.create(Paper);
 
 interface LoginFormProps {
   onSuccess: (rol: string) => void;
@@ -25,6 +39,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -38,23 +53,15 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     try {
       const user = await login(email, password);
       if (!user) {
-        setError("Credenciales inválidas ❌");
+        setError("CREDENCIALES INVÁLIDAS");
       } else {
         onSuccess(user.rol.toLowerCase());
       }
     } catch (err) {
-      setError("Error al conectar con el servidor 📡");
+      setError("ERROR DE CONEXIÓN CON EL SERVIDOR");
     } finally {
       setLoading(false);
     }
-  };
-
-  // Estilo para limpiar el fondo plomo del autocompletado de Chrome
-  const autocompleteStyle = {
-    "& input:-webkit-autofill": {
-      WebkitBoxShadow: "0 0 0 100px white inset !important",
-      WebkitTextFillColor: "#1e293b !important",
-    },
   };
 
   return (
@@ -65,94 +72,126 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         display: "flex", 
         alignItems: "center", 
         justifyContent: "center",
-        background: "linear-gradient(135deg, #3a7afe 0%, #1e40af 100%)",
+        bgcolor: "#000", // Fondo negro como el Index
         position: "fixed", 
         top: 0,
-        left: 0
+        left: 0,
+        color: "#fff"
       }}
     >
+      {/* BOTÓN VOLVER */}
+      <Button
+        startIcon={<ArrowBackIosNew sx={{ fontSize: 12 }} />}
+        onClick={() => navigate("/")}
+        sx={{ 
+          position: "absolute", 
+          top: 40, 
+          left: 40, 
+          color: "#fff", 
+          fontWeight: 800, 
+          fontSize: "0.7rem",
+          letterSpacing: 2,
+          "&:hover": { bgcolor: "rgba(255,255,255,0.1)" }
+        }}
+      >
+        VOLVER AL LAB
+      </Button>
+
       <Container maxWidth="xs">
-        <Paper 
-          elevation={24} 
+        <MotionPaper 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          elevation={0} 
           sx={{ 
-            p: { xs: 3, sm: 5 }, 
-            borderRadius: 6, 
+            p: { xs: 4, sm: 6 }, 
+            borderRadius: 0, // Estilo recto Denim Lab
             display: "flex", 
             flexDirection: "column", 
             alignItems: "center",
-            bgcolor: "#ffffff", // Fondo blanco sólido para asegurar limpieza
+            bgcolor: "#fff", 
+            border: "1px solid #333",
           }}
         >
-          <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
-            <Box 
-              component="img" 
-               
-              alt="Logo" 
-              sx={{ maxWidth: "180px", height: "auto" }} 
-            />
-          </Box>
+          {/* LOGOTIPO */}
+          <Typography 
+            variant="h4" 
+            sx={{ fontWeight: 900, letterSpacing: "-3px", color: "#000", mb: 1 }}
+          >
+            DENIM_LAB.
+          </Typography>
 
-          <Avatar sx={{ mb: 1, bgcolor: "#3a7afe", width: 56, height: 56 }}>
-            <LockIcon fontSize="large" />
-          </Avatar>
-
-          <Typography variant="h5" sx={{ fontWeight: 800, color: "#1e293b", mb: 1 }}>
-            Bienvenido
+          <Typography 
+            variant="overline" 
+            sx={{ fontWeight: 700, letterSpacing: 4, color: "#888", mb: 4 }}
+          >
+            ACCESS_SYSTEM
           </Typography>
 
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: "100%" }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Correo Electrónico"
-              autoComplete="off" // Desactiva sugerencias nativas
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-              // Aplicamos el fix del fondo aquí
-              sx={{ 
-                ...autocompleteStyle,
-                "& .MuiOutlinedInput-root": { borderRadius: 3, bgcolor: "transparent" } 
-              }}
-            />
-            
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Contraseña"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password" // Evita el fondo plomo de guardado
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                ...autocompleteStyle,
-                "& .MuiOutlinedInput-root": { borderRadius: 3, bgcolor: "transparent" } 
-              }}
-            />
+            <Stack spacing={3}>
+              <TextField
+                required
+                fullWidth
+                label="ID_USUARIO / EMAIL"
+                variant="standard"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: "#000", fontSize: 18 }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ 
+                  ...autofillFix,
+                  "& .MuiInputLabel-root": { color: "#888", fontWeight: 700, fontSize: "0.7rem" },
+                  "& .MuiInput-underline:before": { borderBottomColor: "#eee" },
+                  "& .MuiInput-underline:after": { borderBottomColor: "#000" }
+                }}
+              />
+              
+              <TextField
+                required
+                fullWidth
+                label="CONTRASEÑA"
+                type={showPassword ? "text" : "password"}
+                variant="standard"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: "#000", fontSize: 18 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ 
+                  ...autofillFix,
+                  "& .MuiInputLabel-root": { color: "#888", fontWeight: 700, fontSize: "0.7rem" },
+                  "& .MuiInput-underline:before": { borderBottomColor: "#eee" },
+                  "& .MuiInput-underline:after": { borderBottomColor: "#000" }
+                }}
+              />
+            </Stack>
 
-            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+            {error && (
+              <Alert 
+                severity="error" 
+                variant="filled"
+                sx={{ mt: 3, borderRadius: 0, fontWeight: 900, fontSize: "0.6rem", bgcolor: "#000" }}
+              >
+                {error}
+              </Alert>
+            )}
 
             <Button
               type="submit"
@@ -160,18 +199,30 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               variant="contained"
               disabled={loading}
               sx={{ 
-                mt: 4, 
-                py: 1.8, 
-                borderRadius: 3, 
-                fontWeight: 800,
-                textTransform: "none",
-                background: "linear-gradient(45deg, #3a7afe 30%, #4f46e5 90%)",
+                mt: 6, 
+                py: 2, 
+                borderRadius: 0,
+                fontWeight: 900,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                bgcolor: "#000",
+                color: "#fff",
+                transition: "all 0.3s ease",
+                "&:hover": { bgcolor: "#333", transform: "translateY(-2px)" },
+                "&.Mui-disabled": { bgcolor: "#eee", color: "#aaa" }
               }}
             >
-              {loading ? "Cargando..." : "Ingresar al Sistema"}
+              {loading ? "VERIFICANDO..." : "INGRESAR AL SISTEMA"}
             </Button>
+
+            <Typography 
+              variant="caption" 
+              sx={{ display: "block", textAlign: "center", mt: 4, color: "#ccc", fontWeight: 700, fontSize: "0.6rem" }}
+            >
+              © 2026 DENIM_LAB INTERFACE
+            </Typography>
           </Box>
-        </Paper>
+        </MotionPaper>
       </Container>
     </Box>
   ); 
