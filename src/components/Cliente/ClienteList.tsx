@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, TablePagination, IconButton, Tooltip, 
+  TableHead, TableRow, TablePagination, IconButton, 
   CircularProgress, TextField, InputAdornment, Button, 
-  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Avatar, Chip
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Chip, Stack
 } from '@mui/material';
 import { 
   Search as SearchIcon, Edit as EditIcon, Delete as DeleteIcon, 
@@ -29,11 +29,9 @@ export default function ClienteList() {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [clienteToDelete, setClienteToDelete] = useState<{id: string, nombre: string} | null>(null);
 
-  // Memorizamos la función para evitar re-renderizados innecesarios
   const cargarClientes = useCallback(async () => {
     try {
       setLoading(true);
-      // Sincronización con Backend (Base 1) y Material UI (Base 0)
       const result = await listClientes(page + 1, rowsPerPage, search);
       setClientes(result.docs || []);
       setTotalRecords(result.totalDocs || 0);
@@ -47,7 +45,7 @@ export default function ClienteList() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (view === "list") cargarClientes();
-    }, 400); // Debounce para la búsqueda
+    }, 400);
     return () => clearTimeout(timer);
   }, [cargarClientes, view]);
 
@@ -81,13 +79,13 @@ export default function ClienteList() {
 
   if (view === "form") {
     return (
-      <Box sx={{ p: { xs: 2, md: 4 } }}>
+      <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
         <Button 
           startIcon={<ArrowBackIcon />} 
           onClick={() => setView("list")} 
-          sx={{ mb: 3, fontWeight: 'bold', color: '#64748b', textTransform: 'none' }}
+          sx={{ mb: 3, fontWeight: 900, color: '#000', borderRadius: 0, border: '2px solid #000' }}
         >
-          Volver al Listado
+          VOLVER_AL_LISTADO
         </Button>
         <ClienteForm 
           clienteEdit={selectedCliente} 
@@ -99,34 +97,49 @@ export default function ClienteList() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
-      <Paper sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-        <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: '#eef2ff', color: '#4f69f9', width: 48, height: 48 }}>
-              <PeopleIcon />
-            </Avatar>
-            <Typography variant="h5" fontWeight={800} color="#1e293b">Clientes</Typography>
-          </Box>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+      <Paper elevation={0} sx={{ borderRadius: 0, border: '4px solid #000', overflow: 'hidden', bgcolor: '#fff' }}>
+        
+        {/* HEADER DE SECCIÓN */}
+        <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, borderBottom: '4px solid #000' }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Box sx={{ bgcolor: '#000', color: '#fff', p: 1, display: 'flex' }}>
+              <PeopleIcon fontSize="large" />
+            </Box>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: -1 }}>BASE_DATOS_CLIENTES</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#666' }}>REGISTROS_TOTALES: {totalRecords}</Typography>
+            </Box>
+          </Stack>
           <Button 
             variant="contained" 
             startIcon={<PersonAddIcon />} 
             onClick={handleNew}
-            sx={{ bgcolor: '#4f69f9', borderRadius: 2.5, px: 3, py: 1, textTransform: 'none', fontWeight: 'bold', '&:hover': { bgcolor: '#3d54d9' } }}
+            sx={{ 
+              bgcolor: '#000', 
+              color: '#fff',
+              borderRadius: 0, 
+              px: 4, 
+              py: 1.5, 
+              fontWeight: 900, 
+              '&:hover': { bgcolor: '#333' },
+              border: '2px solid #000'
+            }}
           >
-            Nuevo Cliente
+            REGISTRAR_NUEVO_CLIENTE
           </Button>
         </Box>
 
-        <Box sx={{ px: 3, pb: 3 }}>
+        {/* BARRA DE BÚSQUEDA INDUSTRIAL */}
+        <Box sx={{ p: 3, bgcolor: '#f9f9f9', borderBottom: '2px solid #000' }}>
           <TextField 
             fullWidth 
-            placeholder="Buscar por nombre o identificación..." 
+            placeholder="BUSCAR_POR_NOMBRE_O_IDENTIFICACION..." 
             value={search} 
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
             InputProps={{
-              startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
-              sx: { borderRadius: 3, bgcolor: '#f8fafc', border: 'none' }
+              startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#000' }} /></InputAdornment>,
+              sx: { borderRadius: 0, border: '2px solid #000', bgcolor: '#fff', fontWeight: 800, fontFamily: 'monospace' }
             }}
           />
         </Box>
@@ -135,61 +148,64 @@ export default function ClienteList() {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }}>CLIENTE</TableCell>
-                <TableCell sx={{ fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }}>IDENTIFICACIÓN</TableCell>
-                <TableCell sx={{ fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }}>TELÉFONO</TableCell>
-                <TableCell sx={{ fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }}>ESTADO</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }}>ACCIONES</TableCell>
+                <TableCell sx={{ fontWeight: 900, bgcolor: '#000', color: '#fff' }}>CLIENTE_INFO</TableCell>
+                <TableCell sx={{ fontWeight: 900, bgcolor: '#000', color: '#fff' }}>IDENTIFICACION</TableCell>
+                <TableCell sx={{ fontWeight: 900, bgcolor: '#000', color: '#fff' }}>CONTACTO</TableCell>
+                <TableCell sx={{ fontWeight: 900, bgcolor: '#000', color: '#fff' }}>ESTADO</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 900, bgcolor: '#000', color: '#fff' }}>LOGS</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
-                    <CircularProgress size={40} thickness={4} sx={{ color: '#4f69f9' }} />
-                    <Typography sx={{ mt: 2, color: '#64748b' }}>Cargando información...</Typography>
+                    <CircularProgress color="inherit" thickness={6} />
+                    <Typography sx={{ mt: 2, fontWeight: 900, fontFamily: 'monospace' }}>SINCRONIZANDO_DATA...</Typography>
                   </TableCell>
                 </TableRow>
               ) : clientes.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
-                    <Typography color="textSecondary">No se encontraron clientes</Typography>
+                    <Typography sx={{ fontWeight: 800, color: '#666' }}>SIN_RESULTADOS_EN_SISTEMA</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
                 clientes.map((cliente) => (
-                  <TableRow key={cliente.id_cliente} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableRow key={cliente.id_cliente} hover sx={{ borderBottom: '1px solid #eee' }}>
                     <TableCell>
-                      <Typography variant="body2" fontWeight="bold" color="#1e293b">{cliente.nombre}</Typography>
-                      <Typography variant="caption" color="textSecondary">{cliente.email || 'Sin correo'}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 900, textTransform: 'uppercase' }}>{cliente.nombre}</Typography>
+                      <Typography variant="caption" sx={{ fontFamily: 'monospace', color: '#666' }}>{cliente.email || 'NULL'}</Typography>
                     </TableCell>
-                    <TableCell sx={{ color: '#475569', fontWeight: 500 }}>{cliente.cedula}</TableCell>
-                    <TableCell sx={{ color: '#475569' }}>{cliente.telefono || '---'}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{cliente.cedula}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace' }}>{cliente.telefono || '---'}</TableCell>
                     <TableCell>
                       <Chip 
-                        label={cliente.isActive !== false ? "Activo" : "Inactivo"} 
+                        label={cliente.isActive !== false ? "ACTIVE" : "DISABLED"} 
                         size="small"
                         sx={{ 
-                          fontWeight: 'bold',
-                          bgcolor: cliente.isActive !== false ? '#dcfce7' : '#fee2e2',
-                          color: cliente.isActive !== false ? '#166534' : '#991b1b'
+                          fontWeight: 900,
+                          borderRadius: 0,
+                          bgcolor: cliente.isActive !== false ? '#000' : '#fff',
+                          color: cliente.isActive !== false ? '#fff' : '#000',
+                          border: '1px solid #000'
                         }} 
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <Tooltip title="Editar">
-                        <IconButton onClick={() => handleEdit(cliente)} sx={{ color: '#4f69f9', '&:hover': { bgcolor: '#eef2ff' } }}>
+                      <Stack direction="row" spacing={1} justifyContent="center">
+                        <IconButton 
+                          onClick={() => handleEdit(cliente)} 
+                          sx={{ border: '1px solid #000', borderRadius: 0, color: '#000', "&:hover": { bgcolor: '#000', color: '#fff' } }}
+                        >
                           <EditIcon fontSize="small" />
                         </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Eliminar">
                         <IconButton 
                           onClick={() => handleDeleteClick(cliente.id_cliente, cliente.nombre)} 
-                          sx={{ color: '#ef4444', '&:hover': { bgcolor: '#fef2f2' } }}
+                          sx={{ border: '1px solid #000', borderRadius: 0, color: '#ff0000', "&:hover": { bgcolor: '#ff0000', color: '#fff' } }}
                         >
                           <DeleteIcon fontSize="small" />
                         </IconButton>
-                      </Tooltip>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))
@@ -206,36 +222,36 @@ export default function ClienteList() {
           page={page}
           onPageChange={(_, p) => setPage(p)}
           onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-          labelRowsPerPage="Registros por página:"
+          labelRowsPerPage="REGS_POR_PAG:"
+          sx={{ borderTop: '2px solid #000', fontWeight: 900 }}
         />
       </Paper>
 
-      {/* Diálogo de Confirmación mejorado */}
+      {/* Diálogo de Confirmación Brutalista */}
       <Dialog 
         open={openConfirm} 
         onClose={() => setOpenConfirm(false)}
-        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+        PaperProps={{ sx: { borderRadius: 0, border: '4px solid #000', p: 1 } }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#991b1b' }}>
-          <WarningIcon /> Confirmar eliminación
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 900, color: '#ff0000' }}>
+          <WarningIcon /> ELIMINAR_REGISTRO
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            ¿Estás seguro de que deseas eliminar al cliente <strong>{clienteToDelete?.nombre}</strong>? 
-            Esta acción no se puede deshacer.
+          <DialogContentText sx={{ color: '#000', fontWeight: 700 }}>
+            ¿CONFIRMA LA ELIMINACIÓN PERMANENTE DEL CLIENTE: <span style={{ backgroundColor: '#000', color: '#fff', padding: '0 4px' }}>{clienteToDelete?.nombre}</span>?
+            ESTA ACCIÓN NO PUEDE DESHACERSE.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button onClick={() => setOpenConfirm(false)} variant="outlined" sx={{ borderRadius: 2, textTransform: 'none' }}>
-            Cancelar
+          <Button onClick={() => setOpenConfirm(false)} sx={{ borderRadius: 0, border: '2px solid #000', color: '#000', fontWeight: 900 }}>
+            CANCELAR
           </Button>
           <Button 
             onClick={confirmDelete} 
             variant="contained" 
-            color="error"
-            sx={{ borderRadius: 2, textTransform: 'none', boxShadow: 'none' }}
+            sx={{ borderRadius: 0, bgcolor: '#ff0000', fontWeight: 900, '&:hover': { bgcolor: '#cc0000' } }}
           >
-            Eliminar permanentemente
+            CONFIRMAR_ELIMINACION
           </Button>
         </DialogActions>
       </Dialog>

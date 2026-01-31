@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import {
   Drawer, List, ListItemIcon, ListItemText, ListItemButton,
   Box, Typography, Divider, alpha, useTheme, useMediaQuery, IconButton
@@ -11,12 +11,11 @@ import {
   PaletteRounded as PaletteIcon,
   LocalShippingRounded as LocalShippingIcon,
   ChevronLeftRounded as ChevronLeftIcon,
-  WarehouseRounded as WarehouseIcon
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const DRAWER_WIDTH = 260;
-const DRAWER_WIDTH_CLOSED = 88;
+const DRAWER_WIDTH_CLOSED = 70;
 
 interface SidebarProps {
   open: boolean;
@@ -29,29 +28,28 @@ export default function SidebarBodega({ open, onToggle }: SidebarProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Estructura de menú vinculada a las rutas de App.tsx
+  // Estructura de menú - Nombres en MAYÚSCULAS para estilo industrial
   const menuGroups = useMemo(() => [
     {
-      title: "Logística",
+      title: "LOGÍSTICA",
       items: [
-        { text: "Dashboard", icon: <DashboardIcon />, path: "/bodega" }, 
-        { text: "Productos", icon: <InventoryIcon />, path: "/bodega/productos" },
-        { text: "Proveedores", icon: <LocalShippingIcon />, path: "/bodega/proveedores" },
+        { text: "DASHBOARD", icon: <DashboardIcon />, path: "/bodega" }, 
+        { text: "PRODUCTOS", icon: <InventoryIcon />, path: "/bodega/productos" },
+        { text: "PROVEEDORES", icon: <LocalShippingIcon />, path: "/bodega/proveedores" },
       ]
     },
     {
-      title: "Personalización",
+      title: "PERSONALIZACIÓN",
       items: [
-        { text: "Categorías", icon: <CategoryIcon />, path: "/bodega/categorias" },
-        { text: "Tallas", icon: <StraightenIcon />, path: "/bodega/tallas" },
-        { text: "Colores", icon: <PaletteIcon />, path: "/bodega/colores" },
+        { text: "CATEGORÍAS", icon: <CategoryIcon />, path: "/bodega/categorias" },
+        { text: "TALLAS", icon: <StraightenIcon />, path: "/bodega/tallas" },
+        { text: "COLORES", icon: <PaletteIcon />, path: "/bodega/colores" },
       ]
     }
   ], []);
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    // IMPORTANTE: Si es móvil, cerramos el drawer automáticamente tras navegar
     if (isMobile) onToggle();
   };
 
@@ -60,57 +58,61 @@ export default function SidebarBodega({ open, onToggle }: SidebarProps) {
       variant={isMobile ? "temporary" : "permanent"} 
       open={open} 
       onClose={onToggle}
-      ModalProps={{ keepMounted: true }} 
       PaperProps={{
         sx: {
           width: open ? DRAWER_WIDTH : (isMobile ? 0 : DRAWER_WIDTH_CLOSED),
-          backgroundColor: "#0f172a", 
-          borderRight: "none",
-          color: "#cbd5e1",
+          backgroundColor: "#000", // Negro absoluto
+          borderRight: `1px solid ${alpha("#fff", 0.1)}`,
+          color: "#fff",
           transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),
           overflowX: 'hidden',
-          boxShadow: isMobile ? "10px 0 25px rgba(0,0,0,0.5)" : "none"
+          display: "flex",
+          flexDirection: "column"
         }
       }}
     >
       {/* Cabecera */}
-      <Box sx={{ p: 2.5, display: "flex", alignItems: "center", justifyContent: (open || isMobile) ? "space-between" : "center", minHeight: 64 }}>
+      <Box sx={{ p: 2.5, display: "flex", alignItems: "center", justifyContent: (open || isMobile) ? "space-between" : "center", minHeight: 70 }}>
         {(open || isMobile) && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <WarehouseIcon sx={{ color: theme.palette.primary.main }} />
-            <Typography variant="h6" sx={{ fontWeight: 900, color: "#fff", letterSpacing: 1 }}>
-              BODEGA<span style={{ color: theme.palette.primary.main }}>PRO</span>
-            </Typography>
-          </Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 900, letterSpacing: 1, color: "#fff" }}>
+            BODEGA<span style={{ color: "#666", marginLeft: '4px' }}>_LAB</span>
+          </Typography>
         )}
         {!isMobile && (
-          <IconButton onClick={onToggle} sx={{ color: "inherit" }}>
-            <ChevronLeftIcon sx={{ transform: !open ? "rotate(180deg)" : "none", transition: '0.3s' }} />
+          <IconButton 
+            onClick={onToggle} 
+            sx={{ 
+              color: "white", 
+              borderRadius: 0, 
+              border: `1px solid ${alpha("#fff", 0.1)}`,
+              p: 0.5 
+            }}
+          >
+            <ChevronLeftIcon sx={{ transform: !open ? "rotate(180deg)" : "none", fontSize: 18 }} />
           </IconButton>
         )}
       </Box>
 
-      <Divider sx={{ borderColor: alpha("#fff", 0.05) }} />
+      <Divider sx={{ borderColor: alpha("#fff", 0.1) }} />
 
       {/* Menú Dinámico */}
       <Box sx={{ flexGrow: 1, overflowY: 'auto', py: 2 }}>
         {menuGroups.map((group) => (
-          <React.Fragment key={group.title}>
-            {open && (
+          <Box key={group.title} sx={{ mb: 3 }}>
+            {(open || isMobile) && (
               <Typography 
                 variant="caption" 
-                sx={{ px: 4, py: 1.5, display: 'block', color: alpha("#cbd5e1", 0.4), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}
+                sx={{ px: 3, fontWeight: 900, color: "#444", textTransform: 'uppercase', letterSpacing: 2, fontSize: '0.65rem' }}
               >
                 {group.title}
               </Typography>
             )}
             
-            <List sx={{ px: 1.5 }}>
+            <List sx={{ mt: 1, px: 0 }}>
               {group.items.map((item) => {
-                // Comprobación de ruta activa
                 const isSelected = location.pathname === item.path;
                 
                 return (
@@ -119,39 +121,36 @@ export default function SidebarBodega({ open, onToggle }: SidebarProps) {
                     selected={isSelected}
                     onClick={() => handleNavigation(item.path)}
                     sx={{
-                      margin: "4px 0",
-                      borderRadius: "12px",
-                      padding: "10px 16px",
-                      justifyContent: open ? "initial" : "center",
-                      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                      py: 1.5,
+                      px: open || isMobile ? 3 : 0,
+                      justifyContent: (open || isMobile) ? "initial" : "center",
+                      borderRadius: 0, // Recto
+                      borderLeft: isSelected ? "4px solid #fff" : "4px solid transparent",
+                      bgcolor: isSelected ? alpha("#fff", 0.05) : "transparent",
                       "&.Mui-selected": {
-                        backgroundColor: theme.palette.primary.main,
-                        color: "#fff",
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                        bgcolor: alpha("#fff", 0.08),
                         "& .MuiListItemIcon-root": { color: "#fff" },
-                        "&:hover": { backgroundColor: theme.palette.primary.dark },
+                        "&:hover": { bgcolor: alpha("#fff", 0.12) }
                       },
-                      "&:hover": { 
-                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                          transform: open ? "translateX(6px)" : "none"
-                      },
+                      "&:hover": { bgcolor: alpha("#fff", 0.05) },
                     }}
                   >
                     <ListItemIcon sx={{ 
                       minWidth: 0, 
-                      mr: open ? 2 : "auto", 
-                      color: isSelected ? "#fff" : alpha("#cbd5e1", 0.6), 
+                      mr: (open || isMobile) ? 2 : 0, 
+                      color: isSelected ? "#fff" : "#555",
                       justifyContent: "center" 
                     }}>
                       {item.icon}
                     </ListItemIcon>
-                    {open && (
+                    {(open || isMobile) && (
                       <ListItemText 
                         primary={item.text} 
                         primaryTypographyProps={{ 
-                          fontSize: '0.875rem', 
-                          fontWeight: isSelected ? 700 : 500,
-                          color: isSelected ? "#fff" : "inherit"
+                          fontSize: '0.75rem', 
+                          fontWeight: 800,
+                          letterSpacing: 1,
+                          color: isSelected ? "#fff" : "#888"
                         }} 
                       />
                     )}
@@ -159,17 +158,18 @@ export default function SidebarBodega({ open, onToggle }: SidebarProps) {
                 );
               })}
             </List>
-            <Box sx={{ mb: 1.5 }} />
-          </React.Fragment>
+          </Box>
         ))}
       </Box>
 
       {/* Footer */}
       {(open || isMobile) && (
-        <Box sx={{ p: 2, textAlign: 'center', borderTop: `1px solid ${alpha("#fff", 0.05)}` }}>
-          <Typography variant="caption" sx={{ color: alpha("#cbd5e1", 0.3), fontWeight: 500 }}>
-            Sistema Gestión v2.6
-          </Typography>
+        <Box sx={{ p: 2, borderTop: `1px solid ${alpha("#fff", 0.05)}` }}>
+          <Box sx={{ bgcolor: "#111", p: 1.5, textAlign: 'center', border: "1px solid #222" }}>
+            <Typography variant="caption" sx={{ color: "#fff", fontWeight: 900, fontSize: '0.6rem', letterSpacing: 1 }}>
+              LOGISTICS_INTERFACE v.1
+            </Typography>
+          </Box>
         </Box>
       )}
     </Drawer>

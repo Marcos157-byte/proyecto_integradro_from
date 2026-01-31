@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Container, Grid as Grid, Typography, Box, Alert, Skeleton } from "@mui/material";
+import { Container,  Grid, Typography, Box, Alert, Skeleton, Stack, Divider, alpha } from "@mui/material";
 import type { DashboardStats, StockAlerta } from "../../types/dashboardAdmin.types";
 import { getDashboardStats, getStockAlerts } from "../../services/productoService";
 import StatsCards from "../dashboard/StatsCards";
@@ -16,9 +16,8 @@ export default function HomeAdmin() {
     const loadDashboardData = async () => {
       try {
         setLoading(true);
-        setError(null); // Limpiamos errores previos al reintentar
+        setError(null);
 
-        // Ejecutamos ambas peticiones en paralelo
         const [statsData, alertsData] = await Promise.all([
           getDashboardStats(),
           getStockAlerts()
@@ -27,8 +26,7 @@ export default function HomeAdmin() {
         setStats(statsData);
         setAlerts(alertsData);
       } catch (err: any) {
-        // Captura el mensaje de error de tu interceptor de Axios
-        setError(err.message || "Error al conectar con el servidor");
+        setError(err.message || "Error de conexión con el servidor central");
       } finally {
         setLoading(false);
       }
@@ -37,71 +35,93 @@ export default function HomeAdmin() {
     loadDashboardData();
   }, []);
 
-  // 1. Estado de Error: Ahora con un diseño más limpio
   if (error) {
     return (
       <Container sx={{ mt: 8 }}>
         <Alert 
           severity="error" 
           variant="filled" 
-          sx={{ borderRadius: 3, fontWeight: 600 }}
+          sx={{ borderRadius: 0, fontWeight: 900, bgcolor: "#ff0000" }}
         >
-          {error}. Por favor, verifica tu base de datos y conexión.
+          [ERROR_SISTEMA]: {error}. REVISE LA CONEXIÓN A LA BASE DE DATOS.
         </Alert>
       </Container>
     );
   }
 
   return (
-    <Box sx={{ py: 4, bgcolor: "#f8fafc", minHeight: "100vh" }}>
-      <Container maxWidth="lg">
-        {/* Encabezado */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 900, color: "#1e293b", letterSpacing: -0.5 }}>
-            Panel de <span style={{ color: "#3a7afe" }}>Control</span>
+    <Box sx={{ py: 4, bgcolor: "#fff", minHeight: "100vh" }}>
+      <Container maxWidth="xl">
+        
+        {/* ENCABEZADO INDUSTRIAL */}
+        <Box sx={{ mb: 6, borderLeft: '8px solid #000', pl: 3 }}>
+          <Typography variant="h3" sx={{ fontWeight: 900, color: "#000", letterSpacing: -2, lineHeight: 1 }}>
+            ADMIN_CONTROL_PANEL
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Bienvenido, aquí tienes el estado actual de **Promax Jeans**.
+          <Typography variant="caption" sx={{ color: "#666", fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+            Estado Global de Operaciones // DENIM_LAB SYSTEM v2.6
           </Typography>
         </Box>
 
-        {/* Zona 1: Tarjetas de estadísticas (KPIs) */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* ZONA 1: KPIs (TARJETAS) */}
+        <Box sx={{ mb: 6 }}>
           {loading ? (
-            [1, 2, 3].map((i) => (
-              <Grid size={{ xs: 12, sm: 4 }} key={i}>
-                <Skeleton variant="rounded" height={120} sx={{ borderRadius: 4 }} />
-              </Grid>
-            ))
+            <Grid container spacing={2}>
+              {[1, 2, 3, 4].map((i) => (
+                <Grid size={{ xs: 12, sm: 3 }} key={i}>
+                  <Skeleton variant="rectangular" height={140} sx={{ bgcolor: alpha('#000', 0.05) }} />
+                </Grid>
+              ))}
+            </Grid>
           ) : (
-            stats && (
-              <Grid size={{ xs: 12 }}>
-                <StatsCards stats={stats} />
-              </Grid>
-            )
+            stats && <StatsCards stats={stats} />
           )}
-        </Grid>
+        </Box>
 
-        {/* Zona 2: Gráficos y Tablas de Alerta */}
-        <Grid container spacing={3}>
-          {/* Gráfico de Barras - 7 columnas en escritorio */}
+        <Divider sx={{ mb: 6, borderColor: alpha('#000', 0.1) }} />
+
+        {/* ZONA 2: ANALÍTICA Y ALERTAS */}
+        <Grid container spacing={4}>
+          {/* Gráfico de Ventas */}
           <Grid size={{ xs: 12, md: 7 }}>
-            {loading ? (
-              <Skeleton variant="rounded" height={450} sx={{ borderRadius: 4 }} />
-            ) : (
-              stats && <TopProductsChart data={stats.masVendidos} />
-            )}
+            <Box sx={{ border: '1px solid #eee', p: 1 }}>
+                <Box sx={{ bgcolor: '#000', p: 1.5, mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 900, letterSpacing: 1 }}>
+                        PRODUCTOS_LÍDERES_VENTA
+                    </Typography>
+                </Box>
+                {loading ? (
+                <Skeleton variant="rectangular" height={400} />
+                ) : (
+                stats && <TopProductsChart data={stats.masVendidos} />
+                )}
+            </Box>
           </Grid>
 
-          {/* Tabla de Alertas - 5 columnas en escritorio */}
+          {/* Tabla de Alertas de Stock */}
           <Grid size={{ xs: 12, md: 5 }}>
-            {loading ? (
-              <Skeleton variant="rounded" height={450} sx={{ borderRadius: 4 }} />
-            ) : (
-              <StockAlertsTable alerts={alerts} />
-            )}
+            <Box sx={{ border: '1px solid #eee', p: 1 }}>
+                <Box sx={{ bgcolor: alerts.length > 0 ? '#ff0000' : '#000', p: 1.5, mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 900, letterSpacing: 1 }}>
+                        NOTIFICACIONES_CRÍTICAS [{alerts.length}]
+                    </Typography>
+                </Box>
+                {loading ? (
+                <Skeleton variant="rectangular" height={400} />
+                ) : (
+                <StockAlertsTable alerts={alerts} />
+                )}
+            </Box>
           </Grid>
         </Grid>
+
+        {/* FOOTER TÉCNICO */}
+        <Box sx={{ mt: 8, pt: 2, borderTop: '1px solid #eee', textAlign: 'right' }}>
+            <Typography variant="caption" sx={{ fontFamily: 'monospace', color: '#ccc', fontWeight: 700 }}>
+                SISTEMA_OPERATIVO: DENIM_LAB_OS // ENCRYPTED_CONNECTION: TRUE // USUARIO: ADMIN_ROOT
+            </Typography>
+        </Box>
+
       </Container>
     </Box>
   );

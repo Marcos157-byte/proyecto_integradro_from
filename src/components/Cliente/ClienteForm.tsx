@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { 
   TextField, Button, Box, Typography, Paper, 
-  Alert, CircularProgress, Grid, Avatar 
+  Alert, CircularProgress, Grid, Avatar, Divider, Stack 
 } from "@mui/material";
-import { PersonAdd as PersonIcon, Save as SaveIcon } from "@mui/icons-material";
+import { PersonAdd as PersonIcon, Save as SaveIcon, Close as CloseIcon } from "@mui/icons-material";
 import { createCliente, updateCliente } from "../../services/clienteService";
 import type { Cliente } from "../../types/cliente.type";
 
@@ -38,9 +38,8 @@ export default function ClienteForm({ clienteEdit, onSuccess, onCancel }: Client
   }, [clienteEdit]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Si es cédula, evitamos que escriban más de 10 caracteres o caracteres no deseados
     if (e.target.name === 'cedula') {
-      const value = e.target.value.replace(/[^0-9]/g, ''); // Solo números (opcional, según tu regla)
+      const value = e.target.value.replace(/[^0-9]/g, '');
       if (value.length <= 10) {
         setForm({ ...form, [e.target.name]: value });
       }
@@ -57,36 +56,31 @@ export default function ClienteForm({ clienteEdit, onSuccess, onCancel }: Client
     try {
       if (clienteEdit?.id_cliente) {
         await updateCliente(clienteEdit.id_cliente, form);
-        setStatus({ type: 'success', msg: "Cliente actualizado correctamente" });
+        setStatus({ type: 'success', msg: "SISTEMA: CLIENTE_ACTUALIZADO_CON_ÉXITO" });
       } else {
         await createCliente(form);
-        setStatus({ type: 'success', msg: "Cliente registrado con éxito" });
+        setStatus({ type: 'success', msg: "SISTEMA: CLIENTE_REGISTRADO_CON_ÉXITO" });
       }
       setTimeout(onSuccess, 1000);
     } catch (err: any) {
-      let errorMsg = "Error al procesar la solicitud";
+      let errorMsg = "ERROR_INTERNO_SERVIDOR";
       const serverResponse = err.response?.data;
-
-      // 1. CONTROL DE DUPLICADOS (ERROR 23505 POSTGRES)
-      // Buscamos en el 'detail' que envía el driver de BD
       const detail = serverResponse?.detail || "";
       
       if (detail.includes("already exists") || detail.includes("ya existe")) {
         if (detail.includes("cedula")) {
-          errorMsg = `La cédula "${form.cedula}" ya está registrada en el sistema.`;
+          errorMsg = `CONFLICTO: LA CÉDULA "${form.cedula}" YA EXISTE.`;
         } else if (detail.includes("email")) {
-          errorMsg = `El correo "${form.email}" ya pertenece a otro cliente.`;
+          errorMsg = `CONFLICTO: EL CORREO "${form.email}" YA EXISTE.`;
         } else {
-          errorMsg = "Ya existe un registro con estos datos únicos.";
+          errorMsg = "ERROR: DATOS_DUPLICADOS_EN_SISTEMA.";
         }
       } 
-      // 2. VALIDACIONES DE NESTJS (MAX LENGTH, FORMATO, ETC)
       else if (Array.isArray(serverResponse?.message)) {
-        errorMsg = serverResponse.message.join(" | ");
+        errorMsg = serverResponse.message.join(" | ").toUpperCase();
       } 
-      // 3. MENSAJES DIRECTOS
       else if (serverResponse?.message) {
-        errorMsg = serverResponse.message;
+        errorMsg = serverResponse.message.toUpperCase();
       }
 
       setStatus({ type: 'error', msg: errorMsg });
@@ -96,81 +90,134 @@ export default function ClienteForm({ clienteEdit, onSuccess, onCancel }: Client
   };
 
   return (
-    <Paper sx={{ p: 4, maxWidth: 650, mx: "auto", borderRadius: 3, boxShadow: 3 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-        <Avatar sx={{ bgcolor: '#4f69f9', mb: 1, width: 56, height: 56 }}>
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: 4, 
+        maxWidth: 700, 
+        mx: "auto", 
+        borderRadius: 0, 
+        border: '4px solid #000',
+        bgcolor: '#fff' 
+      }}
+    >
+      {/* HEADER DEL FORMULARIO */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+        <Box sx={{ bgcolor: '#000', color: '#fff', p: 1.5, display: 'flex' }}>
           <PersonIcon fontSize="large" />
-        </Avatar>
-        <Typography variant="h5" fontWeight="bold">
-          {clienteEdit ? "Editar Cliente" : "Nuevo Cliente"}
-        </Typography>
+        </Box>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: -1 }}>
+            {clienteEdit ? "EDITAR_EXPEDIENTE" : "NUEVO_REGISTRO_CLIENTE"}
+          </Typography>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: '#666' }}>
+            ID_PROCESO: {clienteEdit ? clienteEdit.id_cliente : 'NUEVO_ENTRY'}
+          </Typography>
+        </Box>
       </Box>
 
       {status && (
-        <Alert severity={status.type} sx={{ mb: 3, borderRadius: 2 }}>
+        <Alert 
+          severity={status.type} 
+          icon={false}
+          sx={{ 
+            mb: 3, 
+            borderRadius: 0, 
+            border: '2px solid #000', 
+            fontWeight: 900,
+            bgcolor: status.type === 'success' ? '#000' : '#fff',
+            color: status.type === 'success' ? '#fff' : '#ff0000',
+          }}
+        >
           {status.msg}
         </Alert>
       )}
 
       <Box component="form" onSubmit={handleSubmit}>
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           <Grid size={12}>
             <TextField 
-              label="Nombre Completo" 
+              label="NOMBRE_COMPLETO" 
               name="nombre" 
               value={form.nombre} 
               fullWidth 
               required 
-              onChange={handleChange} 
+              onChange={handleChange}
+              InputProps={{ sx: { borderRadius: 0, border: '1px solid #000', fontWeight: 700 } }}
+              InputLabelProps={{ sx: { fontWeight: 900, color: '#000' } }}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextField 
-              label="Cédula / RUC" 
+              label="CÉDULA / RUC" 
               name="cedula" 
               value={form.cedula} 
               fullWidth 
               required 
               onChange={handleChange}
-              inputProps={{ maxLength: 10 }}
-              helperText={form.cedula.length === 10 ? "Máximo alcanzado" : "10 dígitos requeridos"}
+              inputProps={{ maxLength: 10, style: { fontFamily: 'monospace', fontWeight: 700 } }}
+              helperText={form.cedula.length === 10 ? "LÍMITE_ALCANZADO" : "FORMATO: 10_DÍGITOS"}
+              InputProps={{ sx: { borderRadius: 0, border: '1px solid #000' } }}
+              InputLabelProps={{ sx: { fontWeight: 900, color: '#000' } }}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextField 
-              label="Teléfono" 
+              label="TELÉFONO" 
               name="telefono" 
               value={form.telefono} 
               fullWidth 
               onChange={handleChange} 
+              inputProps={{ style: { fontFamily: 'monospace', fontWeight: 700 } }}
+              InputProps={{ sx: { borderRadius: 0, border: '1px solid #000' } }}
+              InputLabelProps={{ sx: { fontWeight: 900, color: '#000' } }}
             />
           </Grid>
           <Grid size={12}>
             <TextField 
-              label="Correo Electrónico" 
+              label="CORREO_ELECTRÓNICO" 
               name="email" 
               type="email" 
               value={form.email} 
               fullWidth 
               onChange={handleChange} 
+              InputProps={{ sx: { borderRadius: 0, border: '1px solid #000', fontWeight: 700 } }}
+              InputLabelProps={{ sx: { fontWeight: 900, color: '#000' } }}
             />
           </Grid>
           <Grid size={12}>
             <TextField 
-              label="Dirección" 
+              label="DIRECCIÓN_GEOGRÁFICA" 
               name="direccion" 
               value={form.direccion} 
               fullWidth 
               multiline 
               rows={2} 
               onChange={handleChange} 
+              InputProps={{ sx: { borderRadius: 0, border: '1px solid #000', fontWeight: 700 } }}
+              InputLabelProps={{ sx: { fontWeight: 900, color: '#000' } }}
             />
           </Grid>
         </Grid>
 
-        <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-          <Button fullWidth variant="outlined" onClick={onCancel} disabled={submitting}>
-            Cancelar
+        <Divider sx={{ my: 4, borderBottomWidth: 2, borderColor: '#000' }} />
+
+        <Stack direction="row" spacing={2}>
+          <Button 
+            fullWidth 
+            variant="outlined" 
+            onClick={onCancel} 
+            disabled={submitting}
+            startIcon={<CloseIcon />}
+            sx={{ 
+              borderRadius: 0, 
+              border: '2px solid #000', 
+              color: '#000', 
+              fontWeight: 900,
+              '&:hover': { border: '2px solid #000', bgcolor: '#f5f5f5' }
+            }}
+          >
+            ABORTAR
           </Button>
           <Button 
             type="submit" 
@@ -179,14 +226,17 @@ export default function ClienteForm({ clienteEdit, onSuccess, onCancel }: Client
             disabled={submitting}
             startIcon={!submitting && <SaveIcon />}
             sx={{ 
-              bgcolor: '#4f69f9', 
-              fontWeight: 'bold',
-              '&:hover': { bgcolor: '#3d54d9' }
+              bgcolor: '#000', 
+              color: '#fff',
+              borderRadius: 0, 
+              fontWeight: 900,
+              '&:hover': { bgcolor: '#333' },
+              border: '2px solid #000'
             }}
           >
-            {submitting ? <CircularProgress size={24} color="inherit" /> : "Guardar Cliente"}
+            {submitting ? <CircularProgress size={24} color="inherit" /> : "GUARDAR_REGISTRO"}
           </Button>
-        </Box>
+        </Stack>
       </Box>
     </Paper>
   );

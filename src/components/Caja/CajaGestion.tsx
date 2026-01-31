@@ -1,12 +1,13 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, Paper, Typography, TextField, Button, Grid, 
   Card, Divider, Alert, CircularProgress, Stack, IconButton 
 } from '@mui/material';
 import { 
-  LockOpen, 
-  Lock, 
-  Refresh as RefreshIcon
+  LockOpenRounded as LockOpen, 
+  RefreshRounded as RefreshIcon,
+  PointOfSaleRounded as PosIcon,
+  ReportProblemRounded as WarningIcon
 } from '@mui/icons-material';
 import { getEstadoCaja, abrirCaja, cerrarCaja } from '../../services/cajaService';
 import type { CajaActivaResumen } from '../../types/caja.types';
@@ -22,7 +23,6 @@ export default function CajaGestion() {
     try {
       setLoading(true);
       setError(null);
-      // CORRECCIÓN: Accedemos a data.data por el SuccessResponseDto
       const response = await getEstadoCaja();
       setEstado(response.data); 
     } catch (err: any) {
@@ -36,7 +36,7 @@ export default function CajaGestion() {
 
   const handleAbrir = async () => {
     if (montoInput === '' || Number(montoInput) < 0) {
-      return setError("Por favor, ingrese un monto de apertura válido (0 o superior).");
+      return setError("INGRESE UN MONTO DE APERTURA VÁLIDO.");
     }
     try {
       setLoading(true);
@@ -46,7 +46,7 @@ export default function CajaGestion() {
       setResumenCierre(null); 
       await cargarDatos();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al abrir caja");
+      setError(err.response?.data?.message || "ERROR AL ABRIR CAJA");
     } finally {
       setLoading(false);
     }
@@ -54,19 +54,17 @@ export default function CajaGestion() {
 
   const handleCerrar = async () => {
     if (montoInput === '' || Number(montoInput) < 0) {
-      return setError("Ingrese el monto físico contado en caja.");
+      return setError("INGRESE EL MONTO FÍSICO CONTADO.");
     }
     try {
       setLoading(true);
       setError(null);
       const res = await cerrarCaja(Number(montoInput));
-      
-      // CORRECCIÓN: Accedemos a res.data.resumen según la estructura del backend
       setResumenCierre(res.data.resumen); 
       setEstado(null); 
       setMontoInput('');
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al cerrar caja");
+      setError(err.response?.data?.message || "ERROR AL CERRAR CAJA");
     } finally {
       setLoading(false);
     }
@@ -74,64 +72,105 @@ export default function CajaGestion() {
 
   if (loading && !estado && !resumenCierre) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '60vh', gap: 2 }}>
+        <CircularProgress color="inherit" thickness={6} />
+        <Typography sx={{ fontWeight: 900, letterSpacing: 2 }}>CARGANDO ESTADO SISTEMA...</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 4, maxWidth: 900, mx: 'auto' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1000, mx: 'auto' }}>
+      
+      {/* HEADER TÉCNICO */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b' }}>
-          Control de Caja Diario
-        </Typography>
-        <IconButton onClick={cargarDatos} disabled={loading}>
+        <Box>
+            <Typography variant="h3" sx={{ fontWeight: 900, color: "#000", letterSpacing: -2 }}>
+                TERMINAL DE CAJA
+            </Typography>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: "#666" }}>
+                ESTADO ACTUAL: {estado ? 'OPERATIVO SISTEMA' : 'STANDBY LOCK'}
+            </Typography>
+        </Box>
+        <IconButton 
+            onClick={cargarDatos} 
+            disabled={loading}
+            sx={{ border: '2px solid #000', borderRadius: 0, color: '#000' }}
+        >
           <RefreshIcon />
         </IconButton>
       </Stack>
 
-      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert 
+            severity="error" 
+            icon={<WarningIcon />}
+            sx={{ mb: 3, borderRadius: 0, border: '2px solid #000', fontWeight: 800, bgcolor: '#fff', color: '#000' }}
+        >
+            {error.toUpperCase()}
+        </Alert>
+      )}
 
       {/* --- MODO: RESULTADO DEL CIERRE (ARQUEO) --- */}
       {resumenCierre && !estado && (
-        <Alert 
-          severity={resumenCierre.diferencia < 0 ? "warning" : "success"} 
-          sx={{ mb: 4, borderRadius: 3, p: 2 }}
-          onClose={() => setResumenCierre(null)}
+        <Paper 
+          elevation={0}
+          sx={{ 
+            mb: 4, 
+            borderRadius: 0, 
+            p: 3, 
+            border: '4px solid #000',
+            bgcolor: resumenCierre.diferencia < 0 ? '#fff' : '#000',
+            color: resumenCierre.diferencia < 0 ? '#000' : '#fff'
+          }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Caja Cerrada: {resumenCierre.resultado}
+          <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+            CIERRE_EJECUTADO: {resumenCierre.resultado.toUpperCase()}
           </Typography>
-          <Box sx={{ mt: 1 }}>
-            <Typography>Total Esperado: <strong>${Number(resumenCierre.total_esperado).toFixed(2)}</strong></Typography>
-            <Typography>Contado Físico: <strong>${Number(resumenCierre.contado_fisico).toFixed(2)}</strong></Typography>
-            <Typography>Diferencia: <strong style={{ color: resumenCierre.diferencia < 0 ? '#d32f2f' : '#2e7d32' }}>
-              ${Number(resumenCierre.diferencia).toFixed(2)}
-            </strong></Typography>
-          </Box>
-        </Alert>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 4 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.7 }}>ESPERADO LOG</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'monospace' }}>${Number(resumenCierre.total_esperado).toFixed(2)}</Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.7 }}>FÍSICO REPORTADO</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'monospace' }}>${Number(resumenCierre.contado_fisico).toFixed(2)}</Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.7 }}>DIFERENCIA NETA</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 900, fontFamily: 'monospace', color: resumenCierre.diferencia < 0 ? '#f44336' : '#4caf50' }}>
+                    ${Number(resumenCierre.diferencia).toFixed(2)}
+                </Typography>
+            </Grid>
+          </Grid>
+          <Button 
+            onClick={() => setResumenCierre(null)}
+            sx={{ mt: 3, fontWeight: 900, color: 'inherit', border: '1px solid', borderColor: 'inherit', borderRadius: 0 }}
+          >
+            ENTENDIDO / LIMPIAR PANTALLA
+          </Button>
+        </Paper>
       )}
 
       {!estado ? (
         /* --- MODO: CAJA CERRADA --- */
-        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 4, boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
-          <LockOpen sx={{ fontSize: 80, color: '#4f69f9', mb: 2 }} />
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Caja Cerrada</Typography>
-          <Typography color="textSecondary" sx={{ mb: 4 }}>
-            Inicie su turno ingresando el monto base de efectivo disponible.
+        <Paper elevation={0} sx={{ p: 6, textAlign: 'center', borderRadius: 0, border: '4px solid #000', bgcolor: '#fff' }}>
+          <LockOpen sx={{ fontSize: 80, color: '#000', mb: 2 }} />
+          <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>CAJA CERRADA</Typography>
+          <Typography sx={{ fontWeight: 700, color: '#666', mb: 4 }}>
+            SISTEMA BLOQUEADO. INGRESE EL MONTO BASE PARA INICIAR ACTIVIDADES.
           </Typography>
           
           <Box sx={{ maxWidth: 400, mx: 'auto' }}>
             <TextField
               fullWidth
-              label="Monto Inicial en Efectivo"
+              label="BASE_EFECTIVO_USD"
               type="number"
               value={montoInput}
               onChange={(e) => setMontoInput(e.target.value)}
               placeholder="0.00"
-              sx={{ mb: 3 }}
-              InputProps={{ startAdornment: <Typography sx={{ mr: 1, fontWeight: 700 }}>$</Typography> }}
+              sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 0, border: '2px solid #000', fontWeight: 900 } }}
+              InputProps={{ startAdornment: <Typography sx={{ mr: 1, fontWeight: 900 }}>$</Typography> }}
             />
             <Button 
               variant="contained" 
@@ -139,74 +178,76 @@ export default function CajaGestion() {
               size="large" 
               onClick={handleAbrir}
               disabled={loading}
-              sx={{ py: 1.5, borderRadius: 2, fontWeight: 700, bgcolor: '#4f69f9', '&:hover': { bgcolor: '#3b54d9' } }}
+              sx={{ py: 2, borderRadius: 0, fontWeight: 900, bgcolor: '#000', '&:hover': { bgcolor: '#333' } }}
             >
-              {loading ? 'PROCESANDO...' : 'INICIAR TURNO'}
+              {loading ? 'PROCESANDO...' : 'DESBLOQUEAR CAJA Y TURNO'}
             </Button>
           </Box>
         </Paper>
       ) : (
-        /* --- MODO: CAJA ABIERTA (RESUMEN EN TIEMPO REAL) --- */
+        /* --- MODO: CAJA ABIERTA --- */
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ p: 3, borderRadius: 3, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-              <Typography color="textSecondary" variant="subtitle2" sx={{ fontWeight: 600 }}>APERTURA</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#64748b' }}>
+            <Card elevation={0} sx={{ p: 3, borderRadius: 0, border: '2px solid #000', bgcolor: '#fff', textAlign: 'center' }}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#666' }}>MONTO APERTURA</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 900, fontFamily: 'monospace' }}>
                 ${Number(estado.monto_apertura).toFixed(2)}
               </Typography>
             </Card>
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ p: 3, borderRadius: 3, bgcolor: '#eef2ff', border: '1px solid #e0e7ff', textAlign: 'center' }}>
-              <Typography color="#4f69f9" variant="subtitle2" sx={{ fontWeight: 600 }}>VENTAS (EFECTIVO)</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#4f69f9' }}>
+            <Card elevation={0} sx={{ p: 3, borderRadius: 0, border: '2px solid #000', bgcolor: '#fff', textAlign: 'center' }}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#666' }}>VENTAS REGISTRADAS</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 900, fontFamily: 'monospace' }}>
                 ${Number(estado.ventas_efectivo).toFixed(2)}
               </Typography>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Card sx={{ p: 3, borderRadius: 3, bgcolor: '#f0fdf4', border: '1px solid #dcfce7', textAlign: 'center' }}>
-              <Typography color="#166534" variant="subtitle2" sx={{ fontWeight: 600 }}>MONTO ESPERADO</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#166534' }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Card elevation={0} sx={{ p: 3, borderRadius: 0, border: '2px solid #000', bgcolor: '#000', color: '#fff', textAlign: 'center' }}>
+              <Typography variant="caption" sx={{ fontWeight: 900, opacity: 0.7 }}>TOTAL ESPERADO</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 900, fontFamily: 'monospace' }}>
                 ${Number(estado.monto_esperado).toFixed(2)}
               </Typography>
             </Card>
           </Grid>
 
           <Grid size={12}>
-            <Paper sx={{ p: 4, borderRadius: 4, mt: 2, border: '1px solid #fee2e2' }}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 0, mt: 2, border: '2px solid #000', bgcolor: '#fff' }}>
               <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
-                <Lock color="error" />
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>Finalizar Turno y Arqueo</Typography>
+                <PosIcon />
+                <Typography variant="h6" sx={{ fontWeight: 900 }}>PROCEDIMIENTO DE CIERRE</Typography>
               </Stack>
-              <Divider sx={{ mb: 3 }} />
+              <Divider sx={{ mb: 3, borderBottomWidth: 2, borderColor: '#000' }} />
               
-              <Grid container spacing={3} alignItems="center">
+              <Grid container spacing={4} alignItems="center">
                 <Grid size={{ xs: 12, sm: 7 }}>
-                  <Typography variant="body1" sx={{ color: '#475569' }}>
-                    <strong>Instrucción:</strong> Ingrese el total de efectivo físico que tiene actualmente en su caja. El sistema comparará este valor con el monto esperado.
+                  <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                    <span style={{ backgroundColor: '#000', color: '#fff', padding: '2px 6px' }}>PASO 01:</span> REALICE EL CONTEO FÍSICO DEL EFECTIVO EN GAVETA.
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1, color: '#666', fontWeight: 600 }}>
+                    EL SISTEMA BLOQUEARÁ EL TERMINAL Y GENERARÁ EL LOG DE DIFERENCIAS AUTOMÁTICAMENTE.
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 5 }}>
                   <TextField
                     fullWidth
-                    label="Efectivo Físico Contado"
+                    label="EFECTIVO_FÍSICO_USD"
                     type="number"
                     value={montoInput}
                     onChange={(e) => setMontoInput(e.target.value)}
-                    sx={{ mb: 2 }}
-                    InputProps={{ startAdornment: <Typography sx={{ mr: 1, fontWeight: 700 }}>$</Typography> }}
+                    sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 0, border: '2px solid #000', fontWeight: 900 } }}
+                    InputProps={{ startAdornment: <Typography sx={{ mr: 1, fontWeight: 900 }}>$</Typography> }}
                   />
                   <Button 
                     variant="contained" 
-                    color="error" 
                     fullWidth 
                     size="large"
                     onClick={handleCerrar}
                     disabled={loading}
-                    sx={{ py: 1.5, borderRadius: 2, fontWeight: 700 }}
+                    sx={{ py: 2, borderRadius: 0, fontWeight: 900, bgcolor: '#f44336', '&:hover': { bgcolor: '#d32f2f' } }}
                   >
-                    {loading ? 'CERRANDO...' : 'CERRAR CAJA Y TURNO'}
+                    {loading ? 'SINCRONIZANDO...' : 'EJECUTAR ARQUEO Y CIERRE'}
                   </Button>
                 </Grid>
               </Grid>

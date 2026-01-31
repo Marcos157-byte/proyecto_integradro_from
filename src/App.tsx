@@ -26,7 +26,7 @@ import CajaGestion from "./components/Caja/CajaGestion";
 import ClienteList from "./components/Cliente/ClienteList";
 import StockConsulta from "./components/Producto/StockConsulta";
 import ReporteVentasUsuarios from "./components/Venta/ReporteVentasUsuarios";
-import Index from "./pages";
+import Index from "./pages/index";
 
 function App() {
   return (

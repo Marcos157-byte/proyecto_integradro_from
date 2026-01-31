@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, TablePagination, 
-  Chip, CircularProgress, IconButton, Tooltip,
-  Dialog, DialogTitle, DialogContent        
+  Chip, CircularProgress, IconButton, 
+  Dialog, DialogTitle, DialogContent, Stack      
 } from "@mui/material";
 import { 
   VisibilityRounded as ViewIcon, 
@@ -20,7 +20,6 @@ export default function VentaHistory() {
   const [ventas, setVentas] = useState<VentaResponse[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Estados para el Modal de Detalles
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedVenta, setSelectedVenta] = useState<VentaResponse | null>(null);
 
@@ -31,7 +30,6 @@ export default function VentaHistory() {
   const cargarVentas = async () => {
     setLoading(true);
     try {
-      // Llamada al servicio con paginación
       const res = await listarMisVentas(page + 1, rowsPerPage);
       setVentas(res.data);
       setTotalDocs(res.total);
@@ -46,73 +44,78 @@ export default function VentaHistory() {
     if (user) cargarVentas();
   }, [page, rowsPerPage, user]);
 
-  // Función para abrir detalles
   const handleOpenDetail = (venta: VentaResponse) => {
     setSelectedVenta(venta);
     setOpenDetail(true);
   };
 
   return (
-    <Box sx={{ p: 4 }}>
-      {/* Cabecera de la Sección */}
-      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <HistoryIcon sx={{ fontSize: 40, color: '#3a7afe' }} />
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+      
+      {/* HEADER */}
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'center' }} sx={{ mb: 4 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 900 }}>
-            Mis <span style={{ color: "#3a7afe" }}>Ventas</span>
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Consulta el detalle de tus transacciones realizadas.
-          </Typography>
+            <Typography variant="h3" sx={{ fontWeight: 900, color: "#000", letterSpacing: -2 }}>
+                HISTORIAL_VENTAS
+            </Typography>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: "#666" }}>
+                TERMINAL: 01 // OPERADOR: {user?.nombre?.toUpperCase() || "SISTEMA"}
+            </Typography>
         </Box>
-      </Box>
+        <Box sx={{ bgcolor: "#000", p: 1, display: { xs: 'none', md: 'block' } }}>
+            <HistoryIcon sx={{ color: "#fff", fontSize: 40 }} />
+        </Box>
+      </Stack>
 
-      {/* Tabla de Historial */}
-      <Paper sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      {/* TABLA PRINCIPAL */}
+      <Paper elevation={0} sx={{ border: "2px solid #000", borderRadius: 0, bgcolor: "#fff" }}>
         <TableContainer>
-          <Table>
-            <TableHead sx={{ bgcolor: "#f8fafc" }}>
+          <Table stickyHeader>
+            <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Fecha</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Cliente</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>Método</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>Total</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>Acciones</TableCell>
+                <TableCell sx={{ bgcolor: "#000", color: "#fff", fontWeight: 900 }}>FECHA_LOG</TableCell>
+                <TableCell sx={{ bgcolor: "#000", color: "#fff", fontWeight: 900 }}>CLIENTE</TableCell>
+                <TableCell align="center" sx={{ bgcolor: "#000", color: "#fff", fontWeight: 900 }}>METODO</TableCell>
+                <TableCell align="right" sx={{ bgcolor: "#000", color: "#fff", fontWeight: 900 }}>TOTAL_FINAL</TableCell>
+                <TableCell align="center" sx={{ bgcolor: "#000", color: "#fff", fontWeight: 900 }}>LOG</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
-                    <CircularProgress size={30} />
+                  <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                    <CircularProgress color="inherit" size={30} />
                   </TableCell>
                 </TableRow>
               ) : (
                 ventas.map((v) => (
                   <TableRow key={v.id_venta} hover>
-                    <TableCell>{new Date(v.fechaVenta).toLocaleString()}</TableCell>
-                    {/* Muestra nombre_completo enviado desde el backend actualizado */}
-                    <TableCell sx={{ fontWeight: 500 }}>
-                      {v.cliente?.nombre_completo || 'Consumidor Final'}
+                    <TableCell sx={{ fontWeight: 700, fontFamily: 'monospace' }}>
+                        {new Date(v.fechaVenta).toLocaleString()}
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase' }}>
+                      {v.cliente?.nombre_completo || 'C. FINAL'}
                     </TableCell>
                     <TableCell align="center">
                       <Chip 
-                        label={v.metodoPago} 
+                        label={v.metodoPago.toUpperCase()} 
                         size="small" 
-                        variant="outlined" 
-                        color="primary" 
-                        sx={{ textTransform: 'capitalize', fontWeight: 600 }} 
+                        sx={{ borderRadius: 0, fontWeight: 900, border: '1px solid #000' }} 
                       />
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 800, color: '#2e7d32' }}>
-                      ${Number(v.total).toFixed(2)}
+                    <TableCell align="right">
+                      {/* CORRECCIÓN: whiteSpace: 'nowrap' evita que el número se corte con puntos suspensivos */}
+                      <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                        ${Number(v.total).toFixed(2)}
+                      </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <Tooltip title="Ver detalles de productos">
-                        <IconButton color="info" onClick={() => handleOpenDetail(v)}>
-                          <ViewIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton 
+                        onClick={() => handleOpenDetail(v)}
+                        sx={{ border: '1px solid #000', borderRadius: 0, "&:hover": { bgcolor: '#000', color: '#fff' } }}
+                      >
+                        <ViewIcon fontSize="small" />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))
@@ -127,48 +130,46 @@ export default function VentaHistory() {
           onPageChange={(_, p) => setPage(p)} 
           rowsPerPage={rowsPerPage} 
           onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))} 
+          sx={{ borderTop: '2px solid #000' }}
         />
       </Paper>
 
-      {/* --- MODAL DE DETALLES --- */}
+      {/* MODAL DE DETALLES */}
       <Dialog 
         open={openDetail} 
         onClose={() => setOpenDetail(false)} 
         fullWidth 
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: 3 } }}
+        PaperProps={{ sx: { borderRadius: 0, border: '4px solid #000' } }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 800 }}>
-          Detalle de Venta #{selectedVenta?.id_venta.toString().slice(-5)}
-          <IconButton onClick={() => setOpenDetail(false)}><CloseIcon /></IconButton>
+        <DialogTitle sx={{ bgcolor: '#000', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 900 }}>
+          DATA_LOG: #{selectedVenta?.id_venta.toString().slice(-5).toUpperCase()}
+          <IconButton onClick={() => setOpenDetail(false)} sx={{ color: '#fff' }}><CloseIcon /></IconButton>
         </DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="body2" color="text.secondary">
-              Cliente: <b>{selectedVenta?.cliente?.nombre_completo || 'Consumidor Final'}</b>
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Fecha: {selectedVenta && new Date(selectedVenta.fechaVenta).toLocaleString()}
-            </Typography>
+        <DialogContent sx={{ mt: 2 }}>
+          <Box sx={{ mb: 3, p: 2, border: '1px dashed #000' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#666' }}>CLIENTE</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 900 }}>{selectedVenta?.cliente?.nombre_completo || 'CONSUMIDOR FINAL'}</Typography>
           </Box>
           
-          <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+          <TableContainer sx={{ border: '1px solid #000' }}>
             <Table size="small">
-              <TableHead sx={{ bgcolor: '#f1f5f9' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Producto</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>Cant.</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700 }}>Precio</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700 }}>Subtotal</TableCell>
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                  <TableCell sx={{ fontWeight: 900 }}>PRODUCTO</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 900 }}>CANT</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 900 }}>SUBTOTAL</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {selectedVenta?.ventasDetalles?.map((det) => (
                   <TableRow key={det.id_ventaDetalle}>
-                    <TableCell>{det.producto?.nombre}</TableCell>
-                    <TableCell align="center">{det.cantidad}</TableCell>
-                    <TableCell align="right">${Number(det.precio_unitario).toFixed(2)}</TableCell>
-                    <TableCell align="right">
+                    {/* CORRECCIÓN: Protección contra null en toUpperCase() */}
+                    <TableCell sx={{ fontWeight: 700 }}>
+                        {det.producto?.nombre ? det.producto.nombre.toUpperCase() : 'PRODUCTO'}
+                    </TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 700 }}>{det.cantidad}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 900, fontFamily: 'monospace' }}>
                       ${(det.cantidad * Number(det.precio_unitario)).toFixed(2)}
                     </TableCell>
                   </TableRow>
@@ -177,9 +178,19 @@ export default function VentaHistory() {
             </Table>
           </TableContainer>
 
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 900, color: '#2e7d32' }}>
-              TOTAL: ${Number(selectedVenta?.total).toFixed(2)}
+          {/* CORRECCIÓN FINAL: Total sin recortes y bien visible */}
+          <Box sx={{ mt: 3, p: 2, bgcolor: '#000', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 900 }}>TOTAL_DUE</Typography>
+            <Typography 
+                variant="h4" 
+                sx={{ 
+                    fontWeight: 900, 
+                    fontFamily: 'monospace',
+                    whiteSpace: 'nowrap',
+                    overflow: 'visible' 
+                }}
+            >
+              ${Number(selectedVenta?.total || 0).toFixed(2)}
             </Typography>
           </Box>
         </DialogContent>
